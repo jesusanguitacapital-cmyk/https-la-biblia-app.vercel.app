@@ -734,7 +734,7 @@ const buildDualChartSvgData = (chartData: Array<{ label: string; withdrawn: numb
 
 
 function App() {
-  const { user, signOut, storageMode } = useAuth()
+  const { user, signOut } = useAuth()
   const [data, setData] = useState<AppData>(DEFAULT_DATA)
   const dataRef = useRef<AppData>(DEFAULT_DATA)
   const [operationForm, setOperationForm] = useState<any>(initialOperationState)
@@ -3482,15 +3482,15 @@ function App() {
                   }}>Cambiar carpeta de datos</button>
                 ) : null}
               </div>
-              <div className="settings-folder-note">Guardado actual: {isElectron ? (data.settings.dataFolder ?? 'Carpeta local pendiente de elegir') : storageMode === 'online' ? `Cuenta online · ${user.email}` : `Cuenta local de este navegador · ${user.email}`}</div>
+              <div className="settings-folder-note">Guardado actual: {isElectron ? (data.settings.dataFolder ?? 'Carpeta local pendiente de elegir') : `Cuenta online · ${user.email}`}</div>
             </div>
 
             <div className="settings-section">
               <span className="settings-section-label">Cuenta y seguridad</span>
-              <div className="settings-folder-note">Sesión activa con {user.email}. {storageMode === 'online' ? 'Tus datos están conectados a una cuenta online.' : 'Modo local: este usuario existe solo en este navegador hasta conectar una base de datos online.'}</div>
+              <div className="settings-folder-note">Sesión activa con {user.email}. Tus datos están conectados a una cuenta online.</div>
               <div className="settings-action-list">
                 <button type="button" className="button-secondary settings-action-button" onClick={() => setMessage('Para cambiar contraseña usa “He olvidado mi contraseña” en la pantalla de acceso.')}>Cambiar contraseña</button>
-                <button type="button" className="button-secondary settings-action-button" onClick={() => setMessage(storageMode === 'online' ? 'El cambio de correo se hará con confirmación segura.' : 'Para cambiar correo entre dispositivos hay que conectar una base de datos online.')}>Cambiar correo</button>
+                <button type="button" className="button-secondary settings-action-button" onClick={() => setMessage('El cambio de correo se hará con confirmación segura.')}>Cambiar correo</button>
                 <button type="button" className="button-secondary settings-action-button danger-action-button" onClick={() => void signOut()}>Cerrar sesión</button>
               </div>
             </div>
