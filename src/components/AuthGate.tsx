@@ -65,8 +65,6 @@ export function AuthGate({ children }: AuthGateProps) {
   }, [])
 
   const user = mapSupabaseUser(session?.user ?? null)
-  const isVerified = Boolean(user?.email_confirmed_at)
-
   const signOut = async () => {
     if (!supabase) return
     await supabase.auth.signOut()
@@ -105,7 +103,7 @@ export function AuthGate({ children }: AuthGateProps) {
     if (error) {
       const text = error.message.toLowerCase()
       if (text.includes('confirm') || text.includes('verified')) {
-        setMessage('Ese correo está registrado, pero falta confirmar el email. Abre el correo de Supabase y pulsa el enlace de confirmación.')
+        setMessage('Tu cuenta existe, pero Supabase tiene activada la confirmación por email. Desactiva “Confirm email” en Supabase para entrar sin esperar correo.')
       } else {
         setMessage(text.includes('invalid') ? 'Correo o contraseña incorrectos.' : 'No se pudo iniciar sesión. Revisa la conexión.')
       }
@@ -135,7 +133,7 @@ export function AuthGate({ children }: AuthGateProps) {
 
     setIsSubmitting(true)
     setMessage('')
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email: normalizeEmail(email),
       password,
       options: {
@@ -146,8 +144,13 @@ export function AuthGate({ children }: AuthGateProps) {
     if (error) {
       setMessage(error.message.toLowerCase().includes('already') ? 'Este correo ya está registrado.' : 'No se pudo crear la cuenta.')
     } else {
-      setMessage('Cuenta creada. Revisa tu correo y confirma el email antes de entrar desde cualquier dispositivo.')
-      setMode('login')
+      if (data.session) {
+        setSession(data.session)
+        setMessage('Cuenta creada. Ya estás dentro y tus datos se guardarán online.')
+      } else {
+        setMessage('Cuenta creada. Si no te deja entrar, desactiva “Confirm email” en Supabase Authentication > Providers > Email.')
+        setMode('login')
+      }
       setPassword('')
       setRepeatPassword('')
     }
@@ -192,18 +195,6 @@ export function AuthGate({ children }: AuthGateProps) {
     setIsSubmitting(false)
   }
 
-  const resendVerification = async () => {
-    if (!supabase || !user?.email) return
-    setIsSubmitting(true)
-    const { error } = await supabase.auth.resend({
-      type: 'signup',
-      email: user.email,
-      options: { emailRedirectTo: getAuthRedirectUrl() },
-    })
-    setMessage(error ? 'No se pudo reenviar el correo.' : 'Correo de verificación reenviado.')
-    setIsSubmitting(false)
-  }
-
   if (isChecking) {
     return <div className="auth-shell"><div className="auth-card"><p>Comprobando sesión...</p></div></div>
   }
@@ -218,21 +209,6 @@ export function AuthGate({ children }: AuthGateProps) {
           <code>VITE_SUPABASE_URL</code>
           <code>VITE_SUPABASE_ANON_KEY</code>
           <p>No voy a permitir más registros locales porque luego fallan en otro dispositivo. En cuanto esas variables estén puestas, aparecerá el registro real.</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (user && !isVerified) {
-    return (
-      <div className="auth-shell">
-        <div className="auth-card">
-          <span className="auth-kicker">Correo pendiente</span>
-          <h1>Verifica tu email</h1>
-          <p>Hemos iniciado sesión con {user.email}, pero falta confirmar el correo para proteger tu cuenta.</p>
-          {message ? <div className="auth-message">{message}</div> : null}
-          <button className="button-primary auth-submit" type="button" disabled={isSubmitting} onClick={() => void resendVerification()}>Reenviar correo</button>
-          <button className="button-secondary auth-submit" type="button" onClick={() => void signOut()}>Salir</button>
         </div>
       </div>
     )
