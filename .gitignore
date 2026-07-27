@@ -45,3 +45,5 @@ theme-backups/
 *.njsproj
 *.sln
 *.sw?
+.vercel
+.env*
