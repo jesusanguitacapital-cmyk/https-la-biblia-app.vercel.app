@@ -35,8 +35,6 @@ export function AuthGate({ children }: AuthGateProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [repeatPassword, setRepeatPassword] = useState('')
-  const [name, setName] = useState('')
-  const [acceptedTerms, setAcceptedTerms] = useState(false)
 
   useEffect(() => {
     if (!supabase) {
@@ -114,8 +112,8 @@ export function AuthGate({ children }: AuthGateProps) {
   const handleRegister = async (event: FormEvent) => {
     event.preventDefault()
     if (!supabase) return
-    if (!name.trim() || !email.trim() || !password || !repeatPassword) {
-      setMessage('Completa todos los campos obligatorios.')
+    if (!email.trim() || !password || !repeatPassword) {
+      setMessage('Introduce tu correo y la contraseña.')
       return
     }
     if (!PASSWORD_RULE.test(password)) {
@@ -126,19 +124,16 @@ export function AuthGate({ children }: AuthGateProps) {
       setMessage('Las contraseñas no coinciden.')
       return
     }
-    if (!acceptedTerms) {
-      setMessage('Debes aceptar los términos y privacidad.')
-      return
-    }
-
     setIsSubmitting(true)
     setMessage('')
+    const normalizedEmail = normalizeEmail(email)
+    const displayName = normalizedEmail.split('@')[0] || 'Usuario'
     const { data, error } = await supabase.auth.signUp({
-      email: normalizeEmail(email),
+      email: normalizedEmail,
       password,
       options: {
         emailRedirectTo: getAuthRedirectUrl(),
-        data: { full_name: name.trim(), business_name: name.trim() },
+        data: { full_name: displayName, business_name: displayName },
       },
     })
     if (error) {
@@ -231,14 +226,7 @@ export function AuthGate({ children }: AuthGateProps) {
       <form className="auth-card" onSubmit={mode === 'login' ? handleLogin : mode === 'register' ? handleRegister : mode === 'forgot' ? handleForgot : handleReset}>
         <span className="auth-kicker">La Biblia Trading Journal</span>
         <h1>{mode === 'login' ? 'Accede a tu cuenta' : mode === 'register' ? 'Crea tu cuenta' : mode === 'forgot' ? 'Recuperar contraseña' : 'Nueva contraseña'}</h1>
-        <p>{mode === 'login' ? 'Entra con tu correo y contraseña. Tus datos estarán disponibles desde cualquier dispositivo.' : 'Crea tu usuario online para guardar tus registros en la nube.'}</p>
-
-        {mode === 'register' ? (
-          <label className="auth-field">
-            Nombre o usuario
-            <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Ej: Jesús Trading" />
-          </label>
-        ) : null}
+        <p>{mode === 'login' ? 'Entra con tu correo y contraseña. Tus datos estarán disponibles desde cualquier dispositivo.' : 'Solo necesitas correo y contraseña. Tus registros quedarán ligados a ese correo.'}</p>
 
         {mode !== 'reset' ? (
           <label className="auth-field">
@@ -261,13 +249,6 @@ export function AuthGate({ children }: AuthGateProps) {
           <label className="auth-field">
             Repetir contraseña
             <input type={showPassword ? 'text' : 'password'} value={repeatPassword} onChange={(event) => setRepeatPassword(event.target.value)} placeholder="Repite la contraseña" autoComplete="new-password" />
-          </label>
-        ) : null}
-
-        {mode === 'register' ? (
-          <label className="auth-check">
-            <input type="checkbox" checked={acceptedTerms} onChange={(event) => setAcceptedTerms(event.target.checked)} />
-            Acepto los términos básicos de uso y privacidad.
           </label>
         ) : null}
 
