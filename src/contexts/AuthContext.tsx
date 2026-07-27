@@ -1,8 +1,15 @@
 import { createContext, useContext } from 'react'
-import type { User } from '@supabase/supabase-js'
+
+export interface AuthUser {
+  id: string
+  email?: string
+  created_at?: string
+  email_confirmed_at?: string | null
+  user_metadata?: Record<string, unknown>
+}
 
 export interface AuthContextValue {
-  user: User
+  user: AuthUser
   refreshProfile: () => Promise<void>
 }
 
