@@ -5,6 +5,8 @@ import './App.css'
 import { computeProfit, summaryForStrategy } from './analytics'
 import { extractOperationFromImage } from './aiVision'
 import type { OperationExtractionDraft, OperationExtractionResult } from './aiVision'
+import { useAuth } from './contexts/AuthContext'
+import { loadUserAppData, saveUserAppData } from './services/appDataStore'
 
 const DEFAULT_STRATEGY: Strategy = {
   id: 'default-strategy',
@@ -732,6 +734,7 @@ const buildDualChartSvgData = (chartData: Array<{ label: string; withdrawn: numb
 
 
 function App() {
+  const { user } = useAuth()
   const [data, setData] = useState<AppData>(DEFAULT_DATA)
   const dataRef = useRef<AppData>(DEFAULT_DATA)
   const [operationForm, setOperationForm] = useState<any>(initialOperationState)
@@ -930,9 +933,26 @@ function App() {
           nextData = loaded.data ?? DEFAULT_DATA
           nextData.settings.dataFolder ||= loaded.folder
         } else {
+          const remote = await loadUserAppData(user.id)
           const local = window.localStorage.getItem(STORAGE_KEY)
-          nextData = local ? (JSON.parse(local) as AppData) : DEFAULT_DATA
-          setMessage('Modo navegador: los datos se guardan en localStorage.')
+          if (remote) {
+            nextData = remote
+            setMessage('Datos cargados desde tu cuenta online.')
+          } else if (local) {
+            const parsedLocal = JSON.parse(local) as AppData
+            const shouldImport = window.confirm('He encontrado datos antiguos en este navegador. ¿Quieres importarlos a tu cuenta online?')
+            nextData = shouldImport ? parsedLocal : DEFAULT_DATA
+            if (shouldImport) {
+              await saveUserAppData(user.id, parsedLocal)
+              setMessage('Datos antiguos importados a tu cuenta online.')
+            } else {
+              setMessage('Cuenta online iniciada sin importar datos antiguos.')
+            }
+          } else {
+            nextData = DEFAULT_DATA
+            await saveUserAppData(user.id, nextData)
+            setMessage('Cuenta online creada sin datos todavía.')
+          }
         }
 
         if (nextData.strategies.length === 0) {
@@ -965,7 +985,7 @@ function App() {
     }
 
     initialize()
-  }, [])
+  }, [user.id])
 
 
   // filter strategies and operations by environment
@@ -1258,8 +1278,12 @@ function App() {
         setMessage('Error guardando los datos en la carpeta local.')
       }
     } else {
-      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextData))
-      setMessage('Datos guardados en localStorage del navegador.')
+      try {
+        await saveUserAppData(user.id, nextData)
+        setMessage('Datos guardados en tu cuenta online.')
+      } catch {
+        setMessage('Error guardando en la cuenta online. Revisa la conexión.')
+      }
     }
   }
 
@@ -3458,7 +3482,16 @@ function App() {
                   }}>Cambiar carpeta de datos</button>
                 ) : null}
               </div>
-              <div className="settings-folder-note">Guardado actual: {isElectron ? (data.settings.dataFolder ?? 'Carpeta local pendiente de elegir') : 'Navegador · localStorage en 127.0.0.1:5173'}</div>
+              <div className="settings-folder-note">Guardado actual: {isElectron ? (data.settings.dataFolder ?? 'Carpeta local pendiente de elegir') : `Cuenta online · ${user.email}`}</div>
+            </div>
+
+            <div className="settings-section">
+              <span className="settings-section-label">Cuenta y seguridad</span>
+              <div className="settings-folder-note">Sesión activa con {user.email}. El cierre de sesión está arriba a la derecha.</div>
+              <div className="settings-action-list">
+                <button type="button" className="button-secondary settings-action-button" onClick={() => setMessage('Para cambiar contraseña usa “He olvidado mi contraseña” en la pantalla de acceso. Después añadiremos cambio directo aquí.')}>Cambiar contraseña</button>
+                <button type="button" className="button-secondary settings-action-button" onClick={() => setMessage('El cambio de correo requiere confirmación segura de Supabase. Lo dejo preparado para la siguiente fase avanzada.')}>Cambiar correo</button>
+              </div>
             </div>
 
             <div className="settings-section settings-status-section">

@@ -8063,3 +8063,161 @@ body:has(.app-shell.light-theme) {
     border-radius: 14px !important;
   }
 }
+
+/* Auth and account access */
+.auth-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 28px;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(255, 255, 255, 0.11), transparent 24%),
+    radial-gradient(circle at 85% 18%, rgba(112, 97, 255, 0.18), transparent 22%),
+    linear-gradient(135deg, #020204 0%, #080808 45%, #111111 100%);
+}
+
+.auth-card {
+  width: min(480px, 100%);
+  padding: 34px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 32px;
+  background: linear-gradient(180deg, rgba(24, 24, 24, 0.96), rgba(6, 6, 6, 0.96));
+  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.45);
+  text-align: left;
+}
+
+.auth-card-wide {
+  width: min(720px, 100%);
+}
+
+.auth-kicker {
+  display: inline-flex;
+  margin-bottom: 16px;
+  color: #c8c8c8;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.auth-card h1 {
+  margin: 0 0 10px;
+  color: #fff;
+  font-size: clamp(2rem, 4vw, 3.6rem);
+  line-height: 0.95;
+}
+
+.auth-card p {
+  margin-bottom: 22px;
+  color: #a7adba;
+}
+
+.auth-card code {
+  display: block;
+  margin: 10px 0;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.auth-field {
+  display: grid;
+  gap: 8px;
+  margin: 16px 0;
+  color: #d8dce7;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.auth-field input,
+.auth-password-row input {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 18px;
+  padding: 14px 16px;
+  background: #090909;
+  color: #fff;
+  outline: none;
+}
+
+.auth-field input:focus,
+.auth-password-row input:focus {
+  border-color: rgba(144, 119, 255, 0.92);
+  box-shadow: 0 0 0 4px rgba(144, 119, 255, 0.16);
+}
+
+.auth-password-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+}
+
+.auth-password-row button,
+.auth-links button,
+.account-session-bar button {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 16px;
+  padding: 0 14px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #f4f4f4;
+  font-weight: 800;
+}
+
+.auth-check {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin: 16px 0;
+  color: #b4bbc9;
+}
+
+.auth-message {
+  margin: 16px 0;
+  padding: 13px 14px;
+  border: 1px solid rgba(144, 119, 255, 0.28);
+  border-radius: 16px;
+  background: rgba(144, 119, 255, 0.12);
+  color: #efeaff;
+}
+
+.auth-submit {
+  width: 100%;
+  justify-content: center;
+  margin-top: 6px;
+}
+
+.auth-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.auth-links button {
+  min-height: 42px;
+}
+
+.account-session-bar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 24px;
+  background: rgba(3, 3, 3, 0.86);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(16px);
+  color: #d7dbe6;
+}
+
+.account-session-bar span {
+  font-size: 0.86rem;
+  color: #aeb5c3;
+}
+
+.account-session-bar button {
+  min-height: 34px;
+}
