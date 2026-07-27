@@ -104,7 +104,11 @@ export function AuthGate({ children }: AuthGateProps) {
     const { error } = await supabase.auth.signInWithPassword({ email: normalizeEmail(email), password })
     if (error) {
       const text = error.message.toLowerCase()
-      setMessage(text.includes('invalid') ? 'Correo o contraseña incorrectos.' : 'No se pudo iniciar sesión. Revisa la conexión.')
+      if (text.includes('confirm') || text.includes('verified')) {
+        setMessage('Ese correo está registrado, pero falta confirmar el email. Abre el correo de Supabase y pulsa el enlace de confirmación.')
+      } else {
+        setMessage(text.includes('invalid') ? 'Correo o contraseña incorrectos.' : 'No se pudo iniciar sesión. Revisa la conexión.')
+      }
     }
     setIsSubmitting(false)
   }
