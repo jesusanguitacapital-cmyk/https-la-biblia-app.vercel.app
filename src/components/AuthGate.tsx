@@ -113,17 +113,6 @@ export function AuthGate({ children }: AuthGateProps) {
   const user = supabase ? mapSupabaseUser(session?.user ?? null) : localUser
   const isVerified = Boolean(user?.email_confirmed_at)
 
-  const authValue = useMemo(() => ({
-    user: user as AuthUser,
-    refreshProfile: async () => {
-      if (!supabase) return
-      const { data } = await supabase.auth.getUser()
-      if (data.user && session) {
-        setSession({ ...session, user: data.user })
-      }
-    },
-  }), [session, user])
-
   const resetFormFeedback = () => setMessage('')
 
   const handleLogin = async (event: FormEvent) => {
@@ -308,6 +297,19 @@ export function AuthGate({ children }: AuthGateProps) {
     setRepeatPassword('')
   }
 
+  const authValue = useMemo(() => ({
+    user: user as AuthUser,
+    storageMode: supabase ? 'online' as const : 'local' as const,
+    refreshProfile: async () => {
+      if (!supabase) return
+      const { data } = await supabase.auth.getUser()
+      if (data.user && session) {
+        setSession({ ...session, user: data.user })
+      }
+    },
+    signOut: logout,
+  }), [session, user])
+
   if (isChecking) {
     return <div className="auth-shell"><div className="auth-card"><p>Comprobando sesión...</p></div></div>
   }
@@ -333,7 +335,6 @@ export function AuthGate({ children }: AuthGateProps) {
       <AuthContext.Provider value={authValue}>
         <div className="account-session-bar">
           <span>{displayName} · {user.email}</span>
-          <button type="button" onClick={() => void logout()}>Cerrar sesión</button>
         </div>
         {children}
       </AuthContext.Provider>
@@ -345,7 +346,7 @@ export function AuthGate({ children }: AuthGateProps) {
       <form className="auth-card" onSubmit={mode === 'login' ? handleLogin : mode === 'register' ? handleRegister : mode === 'forgot' ? handleForgot : handleReset}>
         <span className="auth-kicker">La Biblia Trading Journal</span>
         <h1>{mode === 'login' ? 'Accede a tu cuenta' : mode === 'register' ? 'Crea tu cuenta' : mode === 'forgot' ? 'Recuperar contraseña' : 'Nueva contraseña'}</h1>
-        <p>{mode === 'login' ? 'Entra con tu correo y contraseña. Tus registros quedarán guardados para volver otro día.' : 'Crea tu usuario para separar tus registros por correo.'}</p>
+        <p>{mode === 'login' ? 'Entra con tu correo y contraseña. Tus registros se guardarán para volver otro día en este navegador.' : 'Crea tu usuario para separar tus registros por correo.'}</p>
 
         {mode === 'register' ? (
           <label className="auth-field">

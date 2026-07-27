@@ -10,7 +10,9 @@ export interface AuthUser {
 
 export interface AuthContextValue {
   user: AuthUser
+  storageMode: 'local' | 'online'
   refreshProfile: () => Promise<void>
+  signOut: () => Promise<void>
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null)

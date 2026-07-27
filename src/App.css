@@ -8221,3 +8221,61 @@ body:has(.app-shell.light-theme) {
 .account-session-bar button {
   min-height: 34px;
 }
+
+@media (max-width: 760px) {
+  .auth-shell {
+    align-items: start;
+    padding: 18px 12px;
+  }
+
+  .auth-card {
+    width: 100%;
+    padding: 22px;
+    border-radius: 24px;
+  }
+
+  .auth-card h1 {
+    font-size: 2.1rem;
+  }
+
+  .auth-password-row {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-password-row button,
+  .auth-links button {
+    min-height: 44px;
+  }
+
+  .auth-links {
+    display: grid;
+  }
+
+  .account-session-bar {
+    justify-content: center;
+    padding: 8px 12px;
+    text-align: center;
+  }
+
+  .account-session-bar span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .settings-panel {
+    width: min(100%, calc(100vw - 16px));
+    max-height: calc(100dvh - 16px);
+    border-radius: 24px;
+  }
+
+  .settings-action-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+.danger-action-button {
+  border-color: rgba(255, 93, 93, 0.34) !important;
+  color: #ff9b9b !important;
+}
