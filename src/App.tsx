@@ -2231,63 +2231,6 @@ function App() {
         '--accent-color-deep': accentColorDeep,
       } as CSSProperties}
     >
-      <style>{`
-        .app-shell.dark-theme .strategy-calendar-card,
-        .app-shell.dark-theme .strategy-calendar-panel,
-        .app-shell.dark-theme .account-status-calendar {
-          background: #030303 !important;
-          background-image: none !important;
-          border-color: rgba(255, 255, 255, 0.28) !important;
-        }
-
-        .app-shell.dark-theme button.strategy-calendar-day,
-        .app-shell.dark-theme .strategy-calendar-grid > button.strategy-calendar-day,
-        .app-shell.dark-theme .strategy-calendar-card button.strategy-calendar-day,
-        .app-shell.dark-theme .account-status-calendar button.strategy-calendar-day {
-          background: #070707 !important;
-          background-color: #070707 !important;
-          background-image: none !important;
-          border: 1px solid rgba(255, 255, 255, 0.36) !important;
-          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
-        }
-
-        .app-shell.dark-theme button.strategy-calendar-day:hover {
-          background: #121212 !important;
-          background-image: none !important;
-          border-color: rgba(255, 255, 255, 0.56) !important;
-        }
-
-        .app-shell.dark-theme button.strategy-calendar-day.selected {
-          background: #181818 !important;
-          background-image: none !important;
-          border-color: rgba(255, 255, 255, 0.72) !important;
-        }
-
-        .app-shell.dark-theme button.strategy-calendar-day.positive {
-          background: #071009 !important;
-          background-image: none !important;
-          border-color: rgba(99, 230, 155, 0.48) !important;
-        }
-
-        .app-shell.dark-theme button.strategy-calendar-day.negative {
-          background: #120607 !important;
-          background-image: none !important;
-          border-color: rgba(255, 102, 120, 0.48) !important;
-        }
-
-        .app-shell.dark-theme button.strategy-calendar-day.neutral,
-        .app-shell.dark-theme .account-status-calendar button.strategy-calendar-day.neutral {
-          background: #070707 !important;
-          background-image: none !important;
-          border-color: rgba(255, 255, 255, 0.38) !important;
-        }
-
-        .app-shell.dark-theme .strategy-calendar-blank {
-          background: #050505 !important;
-          background-image: none !important;
-          border-color: rgba(255, 255, 255, 0.20) !important;
-        }
-      `}</style>
       <header className="topbar">
         <div className="brand-area">
           <div className="brand-logo" aria-hidden="true">
