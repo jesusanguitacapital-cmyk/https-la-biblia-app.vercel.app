@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, ChangeEvent } from 'react'
 import type { AppData, FundingAccount, FundingAccountStatus, FundingAccountWithdrawal, Operation, Strategy, TradeSide, ResultType } from './types'
 import './App.css'
+import './AppleTheme.css'
 import { computeProfit, summaryForStrategy } from './analytics'
 import { extractOperationFromImage } from './aiVision'
 import type { OperationExtractionDraft, OperationExtractionResult } from './aiVision'
@@ -28,9 +29,9 @@ const DEFAULT_DATA: AppData = {
   settings: {
     dataFolder: null,
     appName: 'La Biblia',
-    primaryColor: '#111827',
+    primaryColor: '#007AFF',
     theme: 'light',
-    visualThemeVersion: 1,
+    visualThemeVersion: 2,
     defaultCurrency: 'EUR',
   },
 }
@@ -170,24 +171,6 @@ const PERIOD_OPTIONS = [
 
 type PeriodKey = typeof PERIOD_OPTIONS[number]['value']
 
-const adjustHexColor = (value: string, amount: number) => {
-  const hex = value.replace('#', '')
-  const normalized = hex.length === 3 ? hex.split('').map((char) => `${char}${char}`).join('') : hex
-  if (!/^[0-9a-fA-F]{6}$/.test(normalized)) return value
-  const channels = normalized.match(/.{2}/g)
-  if (!channels) return value
-
-  const adjusted = channels
-    .map((channel) => {
-      const numeric = parseInt(channel, 16)
-      const next = Math.max(0, Math.min(255, numeric + amount))
-      return next.toString(16).padStart(2, '0')
-    })
-    .join('')
-
-  return `#${adjusted}`
-}
-
 const hexToRgba = (value: string, alpha: number) => {
   const hex = value.replace('#', '')
   const normalized = hex.length === 3 ? hex.split('').map((char) => `${char}${char}`).join('') : hex
@@ -249,6 +232,49 @@ const formatCurrency = (value: number) => {
 const formatMoney = (value: number, currency: 'EUR' | 'USD' = 'EUR') => {
   const sign = value > 0 ? '+' : ''
   return `${sign}${formatNumber(value)} ${currency}`
+}
+
+type AppleChartPointDatum = {
+  x: number
+  y: number
+  label: string
+  value: number
+}
+
+const AppleChartPoint = ({
+  point,
+  chartWidth,
+  seriesLabel,
+  tone = 'primary',
+}: {
+  point: AppleChartPointDatum
+  chartWidth: number
+  seriesLabel: string
+  tone?: 'primary' | 'comparison'
+}) => {
+  const tooltipWidth = 152
+  const tooltipHeight = 42
+  const tooltipX = point.x > chartWidth - tooltipWidth - 18 ? point.x - tooltipWidth - 10 : point.x + 10
+  const tooltipY = Math.max(8, point.y - tooltipHeight - 8)
+  const valueLabel = formatNumber(point.value)
+
+  return (
+    <g
+      className={`apple-chart-point ${tone}`}
+      tabIndex={0}
+      role="img"
+      aria-label={`${point.label}. ${seriesLabel}: ${valueLabel}`}
+    >
+      <circle className="apple-chart-dot" cx={point.x} cy={point.y} r="4" />
+      <g className="apple-chart-tooltip" transform={`translate(${tooltipX} ${tooltipY})`}>
+        <rect width={tooltipWidth} height={tooltipHeight} rx="10" />
+        <text x="10" y="15">
+          <tspan>{point.label}</tspan>
+          <tspan x="10" dy="16" fontWeight="700">{seriesLabel}: {valueLabel}</tspan>
+        </text>
+      </g>
+    </g>
+  )
 }
 
 const formatDate = (value: string) => {
@@ -648,21 +674,32 @@ const formatFundingStatus = (status: FundingAccountStatus) => FUNDING_STATUS_LAB
 const getFundingStatusColor = (status: FundingAccountStatus) => {
   switch (status) {
     case 'evaluation':
-      return '#7fb3ff'
+      return '#007AFF'
     case 'funded':
-      return '#7de3a0'
+      return '#34C759'
     case 'suspended':
-      return '#ff6b7f'
+      return '#FF3B30'
     case 'passed':
-      return '#bda8ff'
+      return '#5856D6'
     case 'closed':
-      return '#9ca5bf'
+      return '#8E8E93'
     default:
-      return '#7fb3ff'
+      return '#007AFF'
   }
 }
 
 const getDaysBetween = (from: string, to: string) => Math.max(0, Math.round((new Date(to).getTime() - new Date(from).getTime()) / (1000 * 60 * 60 * 24)))
+
+const buildSmoothChartPath = (points: Array<{ x: number; y: number }>) => {
+  if (points.length === 0) return ''
+  if (points.length === 1) return `M ${points[0].x} ${points[0].y}`
+
+  return points.slice(1).reduce((path, point, index) => {
+    const previous = points[index]
+    const midpointX = (previous.x + point.x) / 2
+    return `${path} C ${midpointX} ${previous.y}, ${midpointX} ${point.y}, ${point.x} ${point.y}`
+  }, `M ${points[0].x} ${points[0].y}`)
+}
 
 const buildChartSvgData = (chartData: Array<{ label: string; value: number }>) => {
   if (chartData.length === 0) return null
@@ -679,7 +716,7 @@ const buildChartSvgData = (chartData: Array<{ label: string; value: number }>) =
     const y = padding.top + plotHeight - ((item.value - min) / range) * plotHeight
     return { x, y, label: item.label, value: item.value }
   })
-  const linePath = points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ')
+  const linePath = buildSmoothChartPath(points)
   const areaPath = `${linePath} L ${points.at(-1)?.x ?? padding.left} ${height - padding.bottom} L ${padding.left} ${height - padding.bottom} Z`
   const yTicks = Array.from({ length: 5 }, (_, index) => {
     const value = max - (range / 4) * index
@@ -711,7 +748,7 @@ const buildDualChartSvgData = (chartData: Array<{ label: string; withdrawn: numb
 
   const withdrawnPoints = mapSeries('withdrawn')
   const netPoints = mapSeries('net')
-  const linePath = (points: Array<{ x: number; y: number }>) => points.map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`).join(' ')
+  const linePath = (points: Array<{ x: number; y: number }>) => buildSmoothChartPath(points)
   const yTicks = Array.from({ length: 5 }, (_, index) => {
     const value = max - (range / 4) * index
     const y = padding.top + (plotHeight / 4) * index
@@ -967,11 +1004,11 @@ function App() {
           environment: 'real',
           brokerPassword: undefined,
         }))
-        const needsAppleLightMigration = (nextData.settings?.visualThemeVersion ?? 0) < 1
+        const needsAppleLightMigration = (nextData.settings?.visualThemeVersion ?? 0) < 2
         nextData.settings = {
           ...DEFAULT_DATA.settings,
           ...(nextData.settings ?? {}),
-          ...(needsAppleLightMigration ? { theme: 'light' as const, visualThemeVersion: 1 } : {}),
+          ...(needsAppleLightMigration ? { theme: 'light' as const, primaryColor: '#007AFF', visualThemeVersion: 2 } : {}),
         }
 
         if (needsAppleLightMigration) {
@@ -2217,14 +2254,15 @@ function App() {
   }, [selectedAccount, selectedAccountId])
 
   const isLightTheme = data.settings.theme === 'light'
-  const accentColor = isLightTheme ? '#111827' : '#d7dce6'
-  const accentColorDeep = adjustHexColor(accentColor, isLightTheme ? 34 : -56)
+  const accentColor = '#007AFF'
+  const accentColorDeep = '#0056B3'
   const visibleCalendarDate = calendarMonthDate
   const visibleCalendarYear = visibleCalendarDate.getFullYear()
   const visibleCalendarMonth = visibleCalendarDate.getMonth()
   const visibleCalendarDays = new Date(visibleCalendarYear, visibleCalendarMonth + 1, 0).getDate()
   const visibleCalendarMonthLabel = visibleCalendarDate.toLocaleString('es-ES', { month: 'long', year: 'numeric' })
   const calendarWeekdays = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
+  const todayDateKey = getDateKey(new Date().toISOString())
   const visibleCalendarLeadingBlanks = (new Date(visibleCalendarYear, visibleCalendarMonth, 1).getDay() + 6) % 7
   const changeCalendarMonth = (offset: number) => {
     setCalendarMonthDate((current) => new Date(current.getFullYear(), current.getMonth() + offset, 1))
@@ -2397,34 +2435,27 @@ function App() {
                         <svg viewBox={`0 0 ${chartSvg.width} ${chartSvg.height}`} className="chart-svg">
                           <defs>
                             <linearGradient id="chart-gradient" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="0%" stopColor={accentColor} stopOpacity="0.85" />
-                              <stop offset="100%" stopColor="#0a1f2d" stopOpacity="0.1" />
+                              <stop offset="0%" stopColor="#007AFF" stopOpacity="0.16" />
+                              <stop offset="100%" stopColor="#007AFF" stopOpacity="0" />
                             </linearGradient>
-                            <filter id="chart-glow">
-                              <feGaussianBlur stdDeviation="4" result="coloredBlur" />
-                              <feMerge>
-                                <feMergeNode in="coloredBlur" />
-                                <feMergeNode in="SourceGraphic" />
-                              </feMerge>
-                            </filter>
                           </defs>
                           {chartSvg.yTicks.map((tick) => (
                             <g key={tick.y}>
-                              <line x1={chartSvg.padding.left} y1={tick.y} x2={chartSvg.width - chartSvg.padding.right} y2={tick.y} stroke="rgba(148, 163, 184, 0.14)" strokeDasharray="6 8" />
-                              <text x={chartSvg.padding.left - 12} y={tick.y + 4} textAnchor="end" fill="rgba(148, 163, 184, 0.72)" fontSize="12">
+                              <line x1={chartSvg.padding.left} y1={tick.y} x2={chartSvg.width - chartSvg.padding.right} y2={tick.y} stroke="#E5E5EA" strokeDasharray="6 8" />
+                              <text x={chartSvg.padding.left - 12} y={tick.y + 4} textAnchor="end" fill="#8E8E93" fontSize="12">
                                 {formatNumber(tick.value)}
                               </text>
                             </g>
                           ))}
                           {chartSvg.xTicks.map((tick) => (
-                            <text key={`${tick.label}-${tick.x}`} x={tick.x} y={chartSvg.height - 12} textAnchor="middle" fill="rgba(148, 163, 184, 0.72)" fontSize="12">
+                            <text key={`${tick.label}-${tick.x}`} x={tick.x} y={chartSvg.height - 12} textAnchor="middle" fill="#8E8E93" fontSize="12">
                               {tick.label}
                             </text>
                           ))}
-                          <path d={chartSvg.areaPath} fill="url(#chart-gradient)" />
-                          <path d={chartSvg.linePath} fill="none" stroke={accentColor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" filter="url(#chart-glow)" />
+                          <path className="apple-chart-area" d={chartSvg.areaPath} fill="url(#chart-gradient)" />
+                          <path className="apple-chart-line primary" d={chartSvg.linePath} fill="none" stroke="#007AFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                           {chartSvg.points.map((point) => (
-                            <circle key={`${point.label}-${point.x}`} cx={point.x} cy={point.y} r="3.5" fill="#07111f" stroke={accentColor} strokeWidth="2" />
+                            <AppleChartPoint key={`${point.label}-${point.x}`} point={point} chartWidth={chartSvg.width} seriesLabel="Resultado" />
                           ))}
                         </svg>
                       ) : (
@@ -2493,7 +2524,7 @@ function App() {
                           <button
                             key={day}
                             type="button"
-                            className={`strategy-calendar-day ${cls} ${calendarFocus === dayStr ? 'selected' : ''}`}
+                            className={`strategy-calendar-day ${cls} ${calendarFocus === dayStr ? 'selected' : ''} ${todayDateKey === dayStr ? 'today' : ''}`}
                             onClick={() => setCalendarFocus(dayStr)}
                             aria-label={`Ver operaciones del ${formatDate(dayStr)}`}
                           >
@@ -2656,32 +2687,28 @@ function App() {
                 <svg viewBox={`0 0 ${chartSvg.width} ${chartSvg.height}`} className="chart-svg">
                   <defs>
                     <linearGradient id="chart-gradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={accentColor} stopOpacity="0.42" />
-                      <stop offset="100%" stopColor="#0a1f2d" stopOpacity="0.05" />
+                      <stop offset="0%" stopColor="#007AFF" stopOpacity="0.14" />
+                      <stop offset="100%" stopColor="#007AFF" stopOpacity="0" />
                     </linearGradient>
-                    <filter id="chart-glow">
-                      <feGaussianBlur stdDeviation="4" result="coloredBlur" />
-                      <feMerge>
-                        <feMergeNode in="coloredBlur" />
-                        <feMergeNode in="SourceGraphic" />
-                      </feMerge>
-                    </filter>
                   </defs>
                   {chartSvg.yTicks.map((tick) => (
                     <g key={tick.y}>
-                      <line x1={chartSvg.padding.left} y1={tick.y} x2={chartSvg.width - chartSvg.padding.right} y2={tick.y} stroke="rgba(148, 163, 184, 0.16)" strokeDasharray="4 7" />
-                      <text x={chartSvg.padding.left - 12} y={tick.y + 4} textAnchor="end" fill="rgba(148, 163, 184, 0.62)" fontSize="12">
+                      <line x1={chartSvg.padding.left} y1={tick.y} x2={chartSvg.width - chartSvg.padding.right} y2={tick.y} stroke="#E5E5EA" strokeDasharray="4 7" />
+                      <text x={chartSvg.padding.left - 12} y={tick.y + 4} textAnchor="end" fill="#8E8E93" fontSize="12">
                         {Math.round(tick.value)}
                       </text>
                     </g>
                   ))}
                   {chartSvg.xTicks.map((tick) => (
-                    <text key={`${tick.label}-${tick.x}`} x={tick.x} y={chartSvg.height - 12} textAnchor="middle" fill="rgba(148, 163, 184, 0.62)" fontSize="12">
+                    <text key={`${tick.label}-${tick.x}`} x={tick.x} y={chartSvg.height - 12} textAnchor="middle" fill="#8E8E93" fontSize="12">
                       {tick.label}
                     </text>
                   ))}
-                  <path d={chartSvg.areaPath} fill="url(#chart-gradient)" />
-                  <path d={chartSvg.linePath} fill="none" stroke={accentColor} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" filter="url(#chart-glow)" />
+                  <path className="apple-chart-area" d={chartSvg.areaPath} fill="url(#chart-gradient)" />
+                  <path className="apple-chart-line primary" d={chartSvg.linePath} fill="none" stroke="#007AFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                  {chartSvg.points.map((point) => (
+                    <AppleChartPoint key={`global-${point.label}-${point.x}`} point={point} chartWidth={chartSvg.width} seriesLabel="Resultado" />
+                  ))}
                 </svg>
               ) : (
                 <div className="chart-empty">Registra operaciones para ver la evolución.</div>
@@ -2879,7 +2906,7 @@ function App() {
                   <div className="chart-header account-chart-header-polished">
                     <div>
                       <h2>Evolución de retiros y beneficio neto</h2>
-                      <p>La línea blanca muestra los retiros acumulados. La línea gris muestra los retiros menos los exámenes.</p>
+                      <p>La línea azul muestra los retiros acumulados. La línea gris muestra los retiros menos los exámenes.</p>
                     </div>
                     <div className="chart-tabs">
                       <button type="button" className="tab active">Gráfico</button>
@@ -2903,39 +2930,31 @@ function App() {
                       <svg viewBox={`0 0 ${selectedAccountChartSvg.width} ${selectedAccountChartSvg.height}`} className="chart-svg">
                         {selectedAccountChartSvg.yTicks.map((tick) => (
                           <g key={tick.y}>
-                            <line x1={selectedAccountChartSvg.padding.left} y1={tick.y} x2={selectedAccountChartSvg.width - selectedAccountChartSvg.padding.right} y2={tick.y} stroke="rgba(148, 163, 184, 0.14)" strokeDasharray="6 8" />
-                            <text x={selectedAccountChartSvg.padding.left - 12} y={tick.y + 4} textAnchor="end" fill="rgba(148, 163, 184, 0.72)" fontSize="12">
+                            <line x1={selectedAccountChartSvg.padding.left} y1={tick.y} x2={selectedAccountChartSvg.width - selectedAccountChartSvg.padding.right} y2={tick.y} stroke="#E5E5EA" strokeDasharray="6 8" />
+                            <text x={selectedAccountChartSvg.padding.left - 12} y={tick.y + 4} textAnchor="end" fill="#8E8E93" fontSize="12">
                               {formatNumber(tick.value)}
                             </text>
                           </g>
                         ))}
                         {selectedAccountChartSvg.xTicks.map((tick) => (
-                          <text key={`${tick.label}-${tick.x}`} x={tick.x} y={selectedAccountChartSvg.height - 12} textAnchor="middle" fill="rgba(148, 163, 184, 0.72)" fontSize="12">
+                          <text key={`${tick.label}-${tick.x}`} x={tick.x} y={selectedAccountChartSvg.height - 12} textAnchor="middle" fill="#8E8E93" fontSize="12">
                             {tick.label}
                           </text>
                         ))}
-                        <path d={selectedAccountChartSvg.withdrawnPath} fill="none" stroke="#7fb3ff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <title>Línea blanca: Retiros acumulados</title>
-                        </path>
-                        <path d={selectedAccountChartSvg.netPath} fill="none" stroke={accentColor} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                          <title>Línea gris: Retiros menos exámenes</title>
-                        </path>
+                        <path className="apple-chart-line primary" d={selectedAccountChartSvg.withdrawnPath} fill="none" stroke="#007AFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                        <path className="apple-chart-line comparison" d={selectedAccountChartSvg.netPath} fill="none" stroke="#C7C7CC" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                         {selectedAccountChartSvg.withdrawnPoints.map((point) => (
-                          <circle key={`withdrawn-${point.x}-${point.label}`} cx={point.x} cy={point.y} r="3.5" fill="#07111f" stroke="#7fb3ff" strokeWidth="2">
-                            <title>{`${point.label} · Retiros acumulados: ${formatNumber(point.value)}`}</title>
-                          </circle>
+                          <AppleChartPoint key={`withdrawn-${point.x}-${point.label}`} point={point} chartWidth={selectedAccountChartSvg.width} seriesLabel="Retiros" />
                         ))}
                         {selectedAccountChartSvg.netPoints.map((point) => (
-                          <circle key={`net-${point.x}-${point.label}`} cx={point.x} cy={point.y} r="3.5" fill="#07111f" stroke={accentColor} strokeWidth="2">
-                            <title>{`${point.label} · Retiros menos exámenes: ${formatNumber(point.value)}`}</title>
-                          </circle>
+                          <AppleChartPoint key={`net-${point.x}-${point.label}`} point={point} chartWidth={selectedAccountChartSvg.width} seriesLabel="Neto" tone="comparison" />
                         ))}
                       </svg>
                     ) : (
                       <div className="chart-empty">Todavía no hay retiros registrados.</div>
                     )}
                   </div>
-                  <div className="account-chart-series-note">La línea blanca muestra los retiros acumulados. La línea gris muestra los retiros menos los exámenes.</div>
+                  <div className="account-chart-series-note">La línea azul muestra los retiros acumulados. La línea gris muestra los retiros menos los exámenes.</div>
                 </section>
 
                 <div className="account-simple-grid">
@@ -3162,39 +3181,31 @@ function App() {
                     <svg viewBox={`0 0 ${accountChartSvg.width} ${accountChartSvg.height}`} className="chart-svg">
                       {accountChartSvg.yTicks.map((tick) => (
                         <g key={tick.y}>
-                          <line x1={accountChartSvg.padding.left} y1={tick.y} x2={accountChartSvg.width - accountChartSvg.padding.right} y2={tick.y} stroke="rgba(148, 163, 184, 0.16)" strokeDasharray="4 7" />
-                          <text x={accountChartSvg.padding.left - 12} y={tick.y + 4} textAnchor="end" fill="rgba(148, 163, 184, 0.62)" fontSize="12">
+                          <line x1={accountChartSvg.padding.left} y1={tick.y} x2={accountChartSvg.width - accountChartSvg.padding.right} y2={tick.y} stroke="#E5E5EA" strokeDasharray="4 7" />
+                          <text x={accountChartSvg.padding.left - 12} y={tick.y + 4} textAnchor="end" fill="#8E8E93" fontSize="12">
                             {Math.round(tick.value)}
                           </text>
                         </g>
                       ))}
                       {accountChartSvg.xTicks.map((tick) => (
-                        <text key={`${tick.label}-${tick.x}`} x={tick.x} y={accountChartSvg.height - 12} textAnchor="middle" fill="rgba(148, 163, 184, 0.62)" fontSize="12">
+                        <text key={`${tick.label}-${tick.x}`} x={tick.x} y={accountChartSvg.height - 12} textAnchor="middle" fill="#8E8E93" fontSize="12">
                           {tick.label}
                         </text>
                       ))}
-                      <path d={accountChartSvg.withdrawnPath} fill="none" stroke="#7fb3ff" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
-                        <title>Línea blanca: Retiros acumulados</title>
-                      </path>
-                      <path d={accountChartSvg.netPath} fill="none" stroke={accentColor} strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round">
-                        <title>Línea gris: Retiros menos exámenes</title>
-                      </path>
+                      <path className="apple-chart-line primary" d={accountChartSvg.withdrawnPath} fill="none" stroke="#007AFF" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <path className="apple-chart-line comparison" d={accountChartSvg.netPath} fill="none" stroke="#C7C7CC" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                       {accountChartSvg.withdrawnPoints.map((point) => (
-                        <circle key={`global-withdrawn-${point.x}-${point.label}`} cx={point.x} cy={point.y} r="3.5" fill="#07111f" stroke="#7fb3ff" strokeWidth="2">
-                          <title>{`${point.label} · Retiros acumulados: ${formatNumber(point.value)}`}</title>
-                        </circle>
+                        <AppleChartPoint key={`global-withdrawn-${point.x}-${point.label}`} point={point} chartWidth={accountChartSvg.width} seriesLabel="Retiros" />
                       ))}
                       {accountChartSvg.netPoints.map((point) => (
-                        <circle key={`global-net-${point.x}-${point.label}`} cx={point.x} cy={point.y} r="3.5" fill="#07111f" stroke={accentColor} strokeWidth="2">
-                          <title>{`${point.label} · Retiros menos exámenes: ${formatNumber(point.value)}`}</title>
-                        </circle>
+                        <AppleChartPoint key={`global-net-${point.x}-${point.label}`} point={point} chartWidth={accountChartSvg.width} seriesLabel="Neto" tone="comparison" />
                       ))}
                     </svg>
                   ) : (
                     <div className="chart-empty">Crea cuentas para empezar a seguir su evolución.</div>
                   )}
                 </div>
-                <div className="account-chart-series-note">Blanca = retiros acumulados · Gris = retiros menos exámenes comprados</div>
+                <div className="account-chart-series-note">Azul = retiros acumulados · Gris = retiros menos exámenes comprados</div>
               </section>
 
               <section className="strategy-calendar-card account-status-calendar apple-calendar-surface">
@@ -3226,7 +3237,7 @@ function App() {
                         <button
                           key={day}
                           type="button"
-                          className={`strategy-calendar-day ${cls} ${accountCalendarFocus === dayStr ? 'selected' : ''}`}
+                          className={`strategy-calendar-day ${cls} ${accountCalendarFocus === dayStr ? 'selected' : ''} ${todayDateKey === dayStr ? 'today' : ''}`}
                           onClick={() => setAccountCalendarFocus(dayStr)}
                           aria-label={`Ver eventos de cuentas del ${formatDate(dayStr)}`}
                         >
