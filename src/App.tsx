@@ -2225,7 +2225,7 @@ function App() {
 
   return (
     <div
-      className={`app-shell ${isLightTheme ? 'light-theme' : 'dark-theme'}`}
+      className={`app-shell apple-theme ${isLightTheme ? 'light-theme' : 'dark-theme'}`}
       style={{
         '--accent-color': accentColor,
         '--accent-color-deep': accentColorDeep,
@@ -2449,7 +2449,7 @@ function App() {
               </section>
 
               {strategyTab === 'operaciones' ? (
-                <section className="strategy-calendar-card strategy-calendar-panel">
+                <section className="strategy-calendar-card strategy-calendar-panel apple-calendar-surface">
                   <div className="strategy-calendar-header">
                     <strong>{visibleCalendarMonthLabel}</strong>
                     <div className="calendar-nav-actions">
@@ -3186,7 +3186,7 @@ function App() {
                 <div className="account-chart-series-note">Blanca = retiros acumulados · Gris = retiros menos exámenes comprados</div>
               </section>
 
-              <section className="strategy-calendar-card account-status-calendar">
+              <section className="strategy-calendar-card account-status-calendar apple-calendar-surface">
                   <div className="strategy-calendar-header">
                     <strong>Calendario de estados · {visibleCalendarMonthLabel}</strong>
                     <div className="calendar-nav-actions">

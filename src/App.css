@@ -9810,3 +9810,237 @@ input:focus, select:focus, textarea:focus, button:focus-visible {
   .auth-card { width: calc(100vw - 24px) !important; padding: 22px !important; }
 }
 
+
+
+/* === Apple Theme Final Override: explicit contrast and surfaces === */
+html body .app-shell.apple-theme,
+html body .app-shell.apple-theme.dark-theme,
+html body .app-shell.apple-theme.light-theme {
+  --theme-bg-0: #f5f5f7 !important;
+  --theme-bg-1: #ffffff !important;
+  --theme-bg-2: #f2f2f7 !important;
+  --theme-surface-0: #ffffff !important;
+  --theme-surface-1: #ffffff !important;
+  --theme-surface-2: #f9f9fb !important;
+  --theme-text: #1d1d1f !important;
+  --theme-muted: #6e6e73 !important;
+  --theme-muted-2: #8e8e93 !important;
+  --theme-line: rgba(60, 60, 67, 0.16) !important;
+  --theme-line-strong: rgba(60, 60, 67, 0.28) !important;
+  color: #1d1d1f !important;
+  background: transparent !important;
+}
+
+html body:has(.app-shell.apple-theme),
+html body[data-app-theme='dark']:has(.app-shell.apple-theme),
+html body[data-app-theme='light']:has(.app-shell.apple-theme) {
+  background: #f5f5f7 !important;
+  color: #1d1d1f !important;
+}
+
+html body .app-shell.apple-theme .topbar,
+html body .app-shell.apple-theme .section-header,
+html body .app-shell.apple-theme .dashboard-hero-panel,
+html body .app-shell.apple-theme .account-dashboard-hero-panel,
+html body .app-shell.apple-theme .chart-card,
+html body .app-shell.apple-theme .dashboard-strategies-section,
+html body .app-shell.apple-theme .apple-calendar-surface,
+html body .app-shell.apple-theme .strategy-calendar-card,
+html body .app-shell.apple-theme .account-status-calendar,
+html body .app-shell.apple-theme .strategy-card,
+html body .app-shell.apple-theme .account-card,
+html body .app-shell.apple-theme .stat-card,
+html body .app-shell.apple-theme .dashboard-stat-card,
+html body .app-shell.apple-theme .strategy-history-card,
+html body .app-shell.apple-theme .account-calendar-event-card,
+html body .app-shell.apple-theme .result-card,
+html body .app-shell.apple-theme .settings-section {
+  color: #1d1d1f !important;
+  background: #ffffff !important;
+  background-image: none !important;
+  border-color: rgba(60, 60, 67, 0.18) !important;
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.075), inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
+}
+
+html body .app-shell.apple-theme .topbar {
+  background: rgba(255, 255, 255, 0.94) !important;
+}
+
+html body .app-shell.apple-theme h1,
+html body .app-shell.apple-theme h2,
+html body .app-shell.apple-theme h3,
+html body .app-shell.apple-theme h4,
+html body .app-shell.apple-theme p,
+html body .app-shell.apple-theme label,
+html body .app-shell.apple-theme small,
+html body .app-shell.apple-theme .panel-header,
+html body .app-shell.apple-theme .strategy-history-meta,
+html body .app-shell.apple-theme .strategy-history-meta div,
+html body .app-shell.apple-theme .dashboard-stat-label,
+html body .app-shell.apple-theme .dashboard-stat-card span,
+html body .app-shell.apple-theme .account-card-grid span,
+html body .app-shell.apple-theme .strategy-stats span {
+  color: #1d1d1f !important;
+  opacity: 1 !important;
+}
+
+html body .app-shell.apple-theme .strategy-history-meta div,
+html body .app-shell.apple-theme .account-card-grid span,
+html body .app-shell.apple-theme .strategy-stats span,
+html body .app-shell.apple-theme .strategy-date-search-label,
+html body .app-shell.apple-theme .strategy-calendar-weekday,
+html body .app-shell.apple-theme .calendar-label {
+  color: #6e6e73 !important;
+}
+
+html body .app-shell.apple-theme .module-switcher,
+html body .app-shell.apple-theme .environment-switcher {
+  color: #1d1d1f !important;
+  background: #f2f2f7 !important;
+  background-image: none !important;
+  border-color: rgba(60, 60, 67, 0.16) !important;
+}
+
+html body .app-shell.apple-theme .pill,
+html body .app-shell.apple-theme .button-secondary,
+html body .app-shell.apple-theme .calendar-nav-button,
+html body .app-shell.apple-theme .calendar-today-button,
+html body .app-shell.apple-theme .account-web-button,
+html body .app-shell.apple-theme .strategy-menu-button,
+html body .app-shell.apple-theme .operation-menu-button,
+html body .app-shell.apple-theme .sidebar-action-button,
+html body .app-shell.apple-theme .tab:not(.ai-tab),
+html body .app-shell.apple-theme .filter,
+html body .app-shell.apple-theme .strategy-back-button {
+  appearance: none !important;
+  color: #1d1d1f !important;
+  background: #ffffff !important;
+  background-image: none !important;
+  border-color: rgba(60, 60, 67, 0.18) !important;
+  text-shadow: none !important;
+}
+
+html body .app-shell.apple-theme .pill.active,
+html body .app-shell.apple-theme .tab.active:not(.ai-tab),
+html body .app-shell.apple-theme .filter.active,
+html body .app-shell.apple-theme .filter.selected {
+  color: #ffffff !important;
+  background: #007aff !important;
+  border-color: #007aff !important;
+}
+
+html body .app-shell.apple-theme .sidebar-action-button strong,
+html body .app-shell.apple-theme .sidebar-action-button span {
+  opacity: 1 !important;
+}
+
+html body .app-shell.apple-theme .sidebar-action-button strong { color: #1d1d1f !important; }
+html body .app-shell.apple-theme .sidebar-action-button span { color: #ffffff !important; }
+
+html body .app-shell.apple-theme .apple-calendar-surface,
+html body .app-shell.apple-theme .apple-calendar-surface.strategy-calendar-card,
+html body .app-shell.apple-theme .apple-calendar-surface.account-status-calendar {
+  min-width: 0 !important;
+  color: #1d1d1f !important;
+  background: #ffffff !important;
+  background-image: none !important;
+  border: 1px solid rgba(60, 60, 67, 0.22) !important;
+  border-radius: 28px !important;
+  overflow: hidden !important;
+}
+
+html body .app-shell.apple-theme .strategy-calendar-grid {
+  display: grid !important;
+  grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+  gap: 0 !important;
+  background: #d2d2d7 !important;
+  border: 1px solid #d2d2d7 !important;
+  border-radius: 22px !important;
+  overflow: hidden !important;
+}
+
+html body .app-shell.apple-theme .strategy-calendar-weekday {
+  min-width: 0 !important;
+  height: 42px !important;
+  color: #6e6e73 !important;
+  background: #ffffff !important;
+  border: 0 !important;
+  border-right: 1px solid #d2d2d7 !important;
+  border-bottom: 1px solid #d2d2d7 !important;
+  font-weight: 650 !important;
+  text-transform: lowercase !important;
+}
+
+html body .app-shell.apple-theme .strategy-calendar-day,
+html body .app-shell.apple-theme.dark-theme .strategy-calendar-day,
+html body .app-shell.apple-theme.light-theme .strategy-calendar-day,
+html body .app-shell.apple-theme .strategy-calendar-blank,
+html body .app-shell.apple-theme.dark-theme .strategy-calendar-blank,
+html body .app-shell.apple-theme.light-theme .strategy-calendar-blank {
+  appearance: none !important;
+  min-width: 0 !important;
+  min-height: 116px !important;
+  color: #1d1d1f !important;
+  background: #ffffff !important;
+  background-color: #ffffff !important;
+  background-image: none !important;
+  border: 0 !important;
+  border-right: 1px solid #d2d2d7 !important;
+  border-bottom: 1px solid #d2d2d7 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+}
+
+html body .app-shell.apple-theme .strategy-calendar-blank { background: #fbfbfd !important; }
+html body .app-shell.apple-theme .strategy-calendar-day:hover { background: #f5f5f7 !important; transform: none !important; }
+html body .app-shell.apple-theme .strategy-calendar-day.selected { background: #f2f7ff !important; box-shadow: inset 0 0 0 2px rgba(0, 122, 255, 0.22) !important; }
+html body .app-shell.apple-theme .strategy-calendar-day-number { color: #3a3a3c !important; opacity: 1 !important; }
+html body .app-shell.apple-theme .strategy-calendar-day.selected .strategy-calendar-day-number { color: #ffffff !important; background: #ff3b30 !important; }
+html body .app-shell.apple-theme .strategy-calendar-day-summary,
+html body .app-shell.apple-theme .account-calendar-event-pill,
+html body .app-shell.apple-theme .account-calendar-event-more { opacity: 1 !important; text-shadow: none !important; }
+html body .app-shell.apple-theme .strategy-calendar-day-summary.positive,
+html body .app-shell.apple-theme .account-calendar-event-pill.event-retiro,
+html body .app-shell.apple-theme .account-calendar-event-pill.event-fondeada,
+html body .app-shell.apple-theme .account-calendar-event-pill.event-aprobada { color: #16803c !important; background: #dff6e5 !important; }
+html body .app-shell.apple-theme .strategy-calendar-day-summary.negative,
+html body .app-shell.apple-theme .account-calendar-event-pill.event-quemada { color: #c00015 !important; background: #ffe1df !important; }
+html body .app-shell.apple-theme .strategy-calendar-day-summary.neutral,
+html body .app-shell.apple-theme .account-calendar-event-pill.event-examen { color: #005fcc !important; background: #dcecff !important; }
+html body .app-shell.apple-theme .account-calendar-event-pill b,
+html body .app-shell.apple-theme .account-calendar-event-pill small { color: inherit !important; opacity: 1 !important; }
+
+html body .app-shell.apple-theme input,
+html body .app-shell.apple-theme select,
+html body .app-shell.apple-theme textarea {
+  color: #1d1d1f !important;
+  background: #ffffff !important;
+  background-image: none !important;
+  border-color: rgba(60, 60, 67, 0.22) !important;
+  opacity: 1 !important;
+}
+
+html body .app-shell.apple-theme .ai-tab,
+html body .app-shell.apple-theme .ai-button,
+html body .app-shell.apple-theme .ai-analysis-button {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #7c3aed, #af52de 48%, #5856d6) !important;
+  border-color: rgba(88, 86, 214, 0.5) !important;
+  box-shadow: 0 12px 28px rgba(88, 86, 214, 0.22) !important;
+}
+
+html body .app-shell.apple-theme .positive,
+html body .app-shell.apple-theme strong.positive { color: #16803c !important; }
+html body .app-shell.apple-theme .negative,
+html body .app-shell.apple-theme strong.negative { color: #c00015 !important; }
+html body .app-shell.apple-theme .account-calendar-results,
+html body .app-shell.apple-theme .strategy-history-section { color: #1d1d1f !important; background: transparent !important; }
+
+@media (max-width: 920px) {
+  html body .app-shell.apple-theme .strategy-calendar-day,
+  html body .app-shell.apple-theme.dark-theme .strategy-calendar-day,
+  html body .app-shell.apple-theme.light-theme .strategy-calendar-day,
+  html body .app-shell.apple-theme .strategy-calendar-blank { min-height: 78px !important; }
+}
