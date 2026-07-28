@@ -8279,3 +8279,745 @@ body:has(.app-shell.light-theme) {
   border-color: rgba(255, 93, 93, 0.34) !important;
   color: #ff9b9b !important;
 }
+
+
+/* === Tema 6: Cupertino Ledger, Apple style launch === */
+:root {
+  --cupertino-bg: #f5f5f7;
+  --cupertino-bg-2: #ececf0;
+  --cupertino-surface: rgba(255, 255, 255, 0.86);
+  --cupertino-surface-solid: #ffffff;
+  --cupertino-elevated: #fbfbfd;
+  --cupertino-line: rgba(60, 60, 67, 0.14);
+  --cupertino-line-strong: rgba(60, 60, 67, 0.24);
+  --cupertino-text: #1d1d1f;
+  --cupertino-muted: #6e6e73;
+  --cupertino-muted-2: #98989d;
+  --cupertino-blue: #007aff;
+  --cupertino-green: #30d158;
+  --cupertino-red: #ff375f;
+  --cupertino-orange: #ff9f0a;
+  --cupertino-purple: #bf5af2;
+  --cupertino-indigo: #5856d6;
+  --cupertino-radius-xl: 28px;
+  --cupertino-radius-lg: 22px;
+  --cupertino-radius-md: 16px;
+  --cupertino-shadow: 0 22px 60px rgba(0, 0, 0, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  --cupertino-shadow-soft: 0 10px 26px rgba(0, 0, 0, 0.075), inset 0 1px 0 rgba(255, 255, 255, 0.82);
+  --theme-bg-0: var(--cupertino-bg) !important;
+  --theme-bg-1: var(--cupertino-bg) !important;
+  --theme-bg-2: var(--cupertino-bg-2) !important;
+  --theme-surface-0: var(--cupertino-surface) !important;
+  --theme-surface-1: var(--cupertino-surface) !important;
+  --theme-surface-2: var(--cupertino-elevated) !important;
+  --theme-line: var(--cupertino-line) !important;
+  --theme-line-strong: var(--cupertino-line-strong) !important;
+  --theme-text: var(--cupertino-text) !important;
+  --theme-muted: var(--cupertino-muted) !important;
+  --theme-muted-2: var(--cupertino-muted-2) !important;
+  --theme-accent: var(--cupertino-blue) !important;
+  --theme-positive: #248a3d !important;
+  --theme-negative: #d70015 !important;
+  --theme-info: var(--cupertino-blue) !important;
+  --theme-ai: var(--cupertino-purple) !important;
+  color-scheme: light !important;
+}
+
+html,
+body,
+body[data-app-theme="dark"],
+body[data-app-theme="light"] {
+  color-scheme: light !important;
+  background:
+    radial-gradient(circle at 18% -8%, rgba(255, 255, 255, 0.92), transparent 30%),
+    radial-gradient(circle at 88% 0%, rgba(0, 122, 255, 0.085), transparent 26%),
+    linear-gradient(180deg, #f8f8fa 0%, #f1f1f4 48%, #e8e8ed 100%) !important;
+  color: var(--cupertino-text) !important;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Helvetica Neue", Arial, sans-serif !important;
+}
+
+body::before {
+  background-image:
+    linear-gradient(rgba(60, 60, 67, 0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(60, 60, 67, 0.024) 1px, transparent 1px) !important;
+  background-size: 44px 44px !important;
+  opacity: 0.8 !important;
+  mask-image: radial-gradient(circle at 54% 12%, black 0%, transparent 70%) !important;
+}
+
+.app-shell,
+.app-shell.dark-theme,
+.app-shell.light-theme {
+  width: calc(100vw - 28px) !important;
+  max-width: none !important;
+  min-height: 100vh !important;
+  margin: 0 !important;
+  padding: 14px 14px 28px 286px !important;
+  gap: 14px !important;
+  color: var(--cupertino-text) !important;
+  background: transparent !important;
+}
+
+.topbar,
+.app-shell.dark-theme .topbar,
+.app-shell.light-theme .topbar {
+  width: 250px !important;
+  left: 14px !important;
+  top: 14px !important;
+  bottom: 14px !important;
+  padding: 18px !important;
+  border-radius: 32px !important;
+  color: var(--cupertino-text) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 247, 249, 0.84)),
+    rgba(255, 255, 255, 0.86) !important;
+  border: 1px solid var(--cupertino-line) !important;
+  box-shadow: var(--cupertino-shadow) !important;
+  backdrop-filter: blur(28px) saturate(1.18) !important;
+}
+
+.dashboard-hero-panel,
+.account-dashboard-hero-panel,
+.chart-card,
+.strategy-calendar-card,
+.strategy-calendar-panel,
+.account-status-calendar,
+.dashboard-strategies-section,
+.section-header,
+.message-bar,
+.settings-panel,
+.modal-panel,
+.strategy-card,
+.account-card,
+.stat-card,
+.dashboard-stat-card,
+.settings-section,
+.modal-section,
+.strategy-history-card,
+.account-calendar-event-card,
+.app-shell.dark-theme .dashboard-hero-panel,
+.app-shell.dark-theme .account-dashboard-hero-panel,
+.app-shell.dark-theme .chart-card,
+.app-shell.dark-theme .strategy-calendar-card,
+.app-shell.dark-theme .strategy-calendar-panel,
+.app-shell.dark-theme .account-status-calendar,
+.app-shell.dark-theme .dashboard-strategies-section,
+.app-shell.dark-theme .section-header,
+.app-shell.dark-theme .settings-panel,
+.app-shell.dark-theme .modal-panel,
+.app-shell.dark-theme .strategy-card,
+.app-shell.dark-theme .account-card {
+  color: var(--cupertino-text) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(250, 250, 252, 0.78)),
+    var(--cupertino-surface-solid) !important;
+  border: 1px solid var(--cupertino-line) !important;
+  border-radius: var(--cupertino-radius-xl) !important;
+  box-shadow: var(--cupertino-shadow) !important;
+  backdrop-filter: blur(22px) saturate(1.12) !important;
+}
+
+.dashboard-hero-panel,
+.account-dashboard-hero-panel,
+.strategy-calendar-card,
+.dashboard-strategies-section,
+.chart-card {
+  padding: clamp(16px, 1.8vw, 26px) !important;
+}
+
+h1,
+h2,
+h3,
+.brand-title,
+.dashboard-heading h1,
+.chart-header h2,
+.strategy-calendar-header strong,
+.strategy-history-section h3,
+.settings-panel-header h2,
+.modal-header h2,
+.strategy-page-title,
+.dashboard-strategy-name-row strong,
+.strategy-history-meta strong,
+.account-calendar-event-card .strategy-history-meta strong,
+.stat-card strong,
+.dashboard-stat-card strong,
+.account-card-grid strong,
+.strategy-stats strong {
+  color: var(--cupertino-text) !important;
+  letter-spacing: -0.045em !important;
+}
+
+.brand-title {
+  font-weight: 860 !important;
+}
+
+.brand-subtitle,
+.dashboard-heading p,
+.chart-header p,
+.settings-panel-header p,
+.modal-header p,
+.strategy-page-meta,
+.strategy-calendar-weekday,
+.strategy-date-search-label,
+.account-chart-series-note,
+.strategy-history-meta div,
+.strategy-history-ratio,
+.dashboard-stat-card span:not(.dashboard-stat-icon),
+.account-card-grid span,
+.strategy-stats span,
+.settings-folder-note,
+.message-bar,
+.message-bar p,
+small {
+  color: var(--cupertino-muted) !important;
+}
+
+.brand-logo,
+.dashboard-strategy-icon,
+.strategy-card-icon,
+.dashboard-stat-icon {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: var(--cupertino-text) !important;
+  background: linear-gradient(180deg, #ffffff, #f0f0f3) !important;
+  border: 1px solid var(--cupertino-line) !important;
+  box-shadow: var(--cupertino-shadow-soft) !important;
+}
+
+.button-primary,
+.dashboard-create-button,
+.strategy-page-actions .button-primary,
+.modal-footer .button-primary,
+.operation-save-button,
+.app-shell.dark-theme .button-primary,
+.app-shell.light-theme .button-primary {
+  min-height: 40px !important;
+  padding: 10px 17px !important;
+  border-radius: 999px !important;
+  color: #ffffff !important;
+  font-weight: 780 !important;
+  letter-spacing: -0.018em !important;
+  background: linear-gradient(180deg, #2b2d33, #111318) !important;
+  border: 1px solid rgba(17, 19, 24, 0.92) !important;
+  box-shadow: 0 12px 24px rgba(17, 19, 24, 0.20), inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+}
+
+.button-primary:hover,
+.dashboard-create-button:hover,
+.strategy-page-actions .button-primary:hover,
+.modal-footer .button-primary:hover {
+  background: linear-gradient(180deg, #383b43, #1b1d23) !important;
+  transform: translateY(-1px) !important;
+}
+
+.button-secondary,
+.tab:not(.ai-tab),
+.pill,
+.calendar-nav-button,
+.account-web-button,
+.strategy-back-button,
+.strategy-menu-button,
+.sidebar-action-button,
+.period-select-shell select,
+.close-button,
+.icon-button,
+.operation-cancel-button,
+.app-shell.dark-theme .button-secondary,
+.app-shell.dark-theme .calendar-nav-button,
+.app-shell.dark-theme .account-web-button,
+.app-shell.dark-theme .strategy-menu-button,
+.app-shell.dark-theme .tab:not(.ai-tab),
+.app-shell.dark-theme .pill {
+  min-height: 38px !important;
+  color: var(--cupertino-text) !important;
+  font-weight: 740 !important;
+  background: linear-gradient(180deg, #ffffff, #f2f2f5) !important;
+  border: 1px solid var(--cupertino-line) !important;
+  border-radius: 999px !important;
+  box-shadow: var(--cupertino-shadow-soft) !important;
+}
+
+.button-secondary:hover,
+.tab:not(.ai-tab):hover,
+.pill:hover,
+.calendar-nav-button:hover,
+.account-web-button:hover,
+.strategy-back-button:hover,
+.strategy-menu-button:hover,
+.sidebar-action-button:hover,
+.period-select-shell select:hover,
+.close-button:hover,
+.icon-button:hover {
+  color: #ffffff !important;
+  background: linear-gradient(180deg, #2b2d33, #111318) !important;
+  border-color: rgba(17, 19, 24, 0.88) !important;
+  transform: translateY(-1px) !important;
+}
+
+.pill.active,
+.tab.active:not(.ai-tab),
+.filter.selected {
+  color: #ffffff !important;
+  background: linear-gradient(180deg, #2b2d33, #111318) !important;
+  border-color: rgba(17, 19, 24, 0.88) !important;
+}
+
+.ai-tab,
+button.ai-tab,
+.app-shell.dark-theme .ai-tab,
+.app-shell.light-theme .ai-tab,
+.app-shell.dark-theme button.ai-tab,
+.app-shell.light-theme button.ai-tab {
+  color: #ffffff !important;
+  background:
+    radial-gradient(circle at 22% 20%, rgba(255, 255, 255, 0.52), transparent 18%),
+    radial-gradient(circle at 78% 18%, rgba(94, 234, 212, 0.52), transparent 28%),
+    radial-gradient(circle at 66% 86%, rgba(255, 45, 146, 0.34), transparent 30%),
+    linear-gradient(135deg, #3b0a83 0%, #8f2cf3 54%, #35106d 100%) !important;
+  border: 1px solid rgba(191, 90, 242, 0.58) !important;
+  border-radius: 999px !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.30) inset,
+    0 0 24px rgba(191, 90, 242, 0.40),
+    0 16px 38px rgba(88, 86, 214, 0.25) !important;
+}
+
+.ai-tab:hover,
+button.ai-tab:hover {
+  transform: translateY(-1px) scale(1.01) !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.42) inset,
+    0 0 32px rgba(191, 90, 242, 0.52),
+    0 20px 46px rgba(88, 86, 214, 0.30) !important;
+}
+
+.export-tab {
+  color: #248a3d !important;
+  border-color: rgba(36, 138, 61, 0.24) !important;
+  background: linear-gradient(180deg, rgba(48, 209, 88, 0.12), rgba(255, 255, 255, 0.88)) !important;
+}
+
+.positive,
+strong.positive,
+.strategy-history-profit.positive {
+  color: #248a3d !important;
+}
+
+.negative,
+strong.negative,
+.strategy-history-profit.negative {
+  color: #d70015 !important;
+}
+
+.dashboard-overview-grid,
+.account-dashboard-grid {
+  grid-template-columns: repeat(8, minmax(92px, 1fr)) !important;
+  gap: 10px !important;
+}
+
+.dashboard-stat-card,
+.stat-card {
+  min-height: 82px !important;
+  padding: 10px !important;
+  border-radius: 21px !important;
+  background: linear-gradient(180deg, #ffffff, #f8f8fa) !important;
+}
+
+.dashboard-stat-card strong,
+.stat-card strong {
+  font-size: clamp(0.9rem, 1.08vw, 1.22rem) !important;
+  line-height: 1.02 !important;
+}
+
+.chart-visual,
+.dashboard-chart-visual {
+  border-radius: 30px !important;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 1), transparent 42%),
+    linear-gradient(180deg, #ffffff, #f2f2f7) !important;
+  border: 1px solid rgba(60, 60, 67, 0.12) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.90), 0 18px 42px rgba(0, 0, 0, 0.08) !important;
+}
+
+.chart-svg path[fill="none"] {
+  stroke: #1d1d1f !important;
+  filter: drop-shadow(0 0 7px rgba(255, 255, 255, 0.9)) drop-shadow(0 8px 18px rgba(29, 29, 31, 0.16)) !important;
+}
+
+.account-dashboard-hero-panel .chart-svg path:nth-of-type(2),
+.account-roi-panel .chart-svg path:nth-of-type(2) {
+  stroke: #8e8e93 !important;
+  opacity: 0.78 !important;
+  filter: none !important;
+}
+
+.chart-svg text {
+  fill: rgba(110, 110, 115, 0.92) !important;
+}
+
+.strategy-calendar-card,
+.account-status-calendar {
+  padding: clamp(16px, 1.7vw, 24px) !important;
+}
+
+.strategy-calendar-grid {
+  gap: 8px !important;
+}
+
+.strategy-calendar-day,
+.strategy-calendar-blank,
+.app-shell.dark-theme .strategy-calendar-day,
+.app-shell.dark-theme .strategy-calendar-blank,
+body[data-app-theme="dark"] button.strategy-calendar-day {
+  min-height: 72px !important;
+  border-radius: 20px !important;
+  color: var(--cupertino-text) !important;
+  background: linear-gradient(180deg, #ffffff, #f7f7fa) !important;
+  border: 1px solid rgba(60, 60, 67, 0.12) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86), 0 8px 18px rgba(0, 0, 0, 0.045) !important;
+}
+
+.strategy-calendar-day:hover {
+  background: #ffffff !important;
+  border-color: rgba(60, 60, 67, 0.26) !important;
+}
+
+.strategy-calendar-day.selected {
+  background: linear-gradient(180deg, #ffffff, #eeeeF3) !important;
+  border-color: rgba(0, 122, 255, 0.38) !important;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.10), var(--cupertino-shadow-soft) !important;
+}
+
+.strategy-calendar-day.positive {
+  border-color: rgba(36, 138, 61, 0.32) !important;
+  background: linear-gradient(180deg, rgba(48, 209, 88, 0.13), rgba(255, 255, 255, 0.96)) !important;
+}
+
+.strategy-calendar-day.negative {
+  border-color: rgba(215, 0, 21, 0.32) !important;
+  background: linear-gradient(180deg, rgba(255, 55, 95, 0.12), rgba(255, 255, 255, 0.96)) !important;
+}
+
+.strategy-calendar-day.neutral {
+  border-color: rgba(0, 122, 255, 0.28) !important;
+  background: linear-gradient(180deg, rgba(0, 122, 255, 0.10), rgba(255, 255, 255, 0.96)) !important;
+}
+
+.strategy-calendar-day-number {
+  color: var(--cupertino-muted) !important;
+  font-weight: 760 !important;
+}
+
+.strategy-calendar-day-summary {
+  font-size: 0.62rem !important;
+  font-weight: 820 !important;
+}
+
+.account-calendar-event-pill {
+  border-radius: 999px !important;
+  font-weight: 820 !important;
+}
+
+.account-calendar-event-pill.event-examen {
+  color: #0057d8 !important;
+  background: rgba(0, 122, 255, 0.12) !important;
+  border-color: rgba(0, 122, 255, 0.24) !important;
+}
+
+.account-calendar-event-pill.event-fondeada,
+.account-calendar-event-pill.event-aprobada,
+.account-calendar-event-pill.event-retiro {
+  color: #248a3d !important;
+  background: rgba(48, 209, 88, 0.13) !important;
+  border-color: rgba(36, 138, 61, 0.22) !important;
+}
+
+.account-calendar-event-pill.event-quemada {
+  color: #d70015 !important;
+  background: rgba(255, 55, 95, 0.12) !important;
+  border-color: rgba(215, 0, 21, 0.22) !important;
+}
+
+.dashboard-strategies-section .dashboard-strategies-grid:has(.account-card) {
+  grid-template-columns: repeat(3, minmax(315px, 1fr)) !important;
+  gap: 14px !important;
+}
+
+.dashboard-strategies-section .dashboard-strategy-card.account-card {
+  min-height: 0 !important;
+  padding: 16px !important;
+  border-radius: 30px !important;
+}
+
+.account-card .strategy-card-header {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: start !important;
+  gap: 12px !important;
+}
+
+.account-card .dashboard-strategy-title-block,
+.account-card .dashboard-strategy-name-row {
+  min-width: 0 !important;
+}
+
+.account-card .dashboard-strategy-name-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+.account-card .dashboard-strategy-name-row strong {
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  font-size: clamp(0.95rem, 1.05vw, 1.16rem) !important;
+}
+
+.account-card .strategy-card-controls {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+  flex-wrap: nowrap !important;
+}
+
+.strategy-badge,
+.status-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 30px !important;
+  padding: 6px 11px !important;
+  border-radius: 999px !important;
+  font-size: 0.74rem !important;
+  font-weight: 820 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  border: 1px solid currentColor !important;
+  background: color-mix(in srgb, currentColor 12%, transparent) !important;
+}
+
+.account-card .strategy-badge {
+  max-width: 136px !important;
+}
+
+.account-web-button,
+.strategy-menu-button {
+  width: auto !important;
+  min-width: 42px !important;
+  min-height: 38px !important;
+  padding-inline: 13px !important;
+}
+
+.strategy-menu-button span {
+  display: inline-flex !important;
+  transform: translateY(-1px) !important;
+}
+
+.account-card-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+.account-card-grid > div,
+.strategy-stats > div {
+  min-height: 74px !important;
+  padding: 10px !important;
+  border-radius: 19px !important;
+  background: linear-gradient(180deg, #ffffff, #f7f7fa) !important;
+  border: 1px solid rgba(60, 60, 67, 0.11) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.88) !important;
+}
+
+.account-card-grid strong,
+.strategy-stats strong {
+  font-size: clamp(0.78rem, 0.82vw, 0.98rem) !important;
+  line-height: 1.05 !important;
+  overflow-wrap: anywhere !important;
+}
+
+.strategy-menu {
+  background: rgba(255, 255, 255, 0.98) !important;
+  border: 1px solid rgba(60, 60, 67, 0.14) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 22px 52px rgba(0, 0, 0, 0.18) !important;
+  backdrop-filter: blur(18px) saturate(1.14) !important;
+}
+
+.strategy-menu-item {
+  color: var(--cupertino-text) !important;
+  border-radius: 12px !important;
+}
+
+.strategy-menu-item:hover {
+  color: #ffffff !important;
+  background: linear-gradient(180deg, #2b2d33, #111318) !important;
+}
+
+input,
+select,
+textarea,
+.input-shell,
+.app-shell.dark-theme input,
+.app-shell.dark-theme select,
+.app-shell.dark-theme textarea {
+  color: var(--cupertino-text) !important;
+  background: linear-gradient(180deg, #ffffff, #f6f6f8) !important;
+  border: 1px solid rgba(60, 60, 67, 0.14) !important;
+  border-radius: 16px !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.90) !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus,
+button:focus-visible {
+  outline: none !important;
+  border-color: rgba(0, 122, 255, 0.44) !important;
+  box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.92) !important;
+}
+
+.account-status-field {
+  background: linear-gradient(180deg, #ffffff, #f7f7fa) !important;
+  border-color: color-mix(in srgb, var(--account-status-color) 30%, var(--cupertino-line)) !important;
+}
+
+.account-status-preview {
+  justify-content: center !important;
+  min-height: 28px !important;
+  border-radius: 999px !important;
+  font-size: 0.74rem !important;
+  font-weight: 820 !important;
+}
+
+.account-date-option-field {
+  gap: 8px !important;
+}
+
+.account-date-option-field > span {
+  color: var(--cupertino-muted) !important;
+  font-weight: 760 !important;
+}
+
+.account-date-clear-button {
+  min-height: 34px !important;
+  width: 100% !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(0, 122, 255, 0.22) !important;
+  background: rgba(0, 122, 255, 0.10) !important;
+  color: #0057d8 !important;
+  font-weight: 780 !important;
+}
+
+.account-date-clear-button:hover {
+  color: #ffffff !important;
+  background: #007aff !important;
+}
+
+.modal-overlay,
+.settings-overlay {
+  background: rgba(245, 245, 247, 0.70) !important;
+  backdrop-filter: blur(20px) saturate(1.12) !important;
+}
+
+.auth-shell {
+  background:
+    radial-gradient(circle at 20% 8%, rgba(255, 255, 255, 0.96), transparent 28%),
+    radial-gradient(circle at 82% 12%, rgba(191, 90, 242, 0.14), transparent 24%),
+    linear-gradient(180deg, #f8f8fa, #e8e8ed) !important;
+}
+
+.auth-card {
+  color: var(--cupertino-text) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(250, 250, 252, 0.88)) !important;
+  border: 1px solid var(--cupertino-line) !important;
+  box-shadow: var(--cupertino-shadow) !important;
+  backdrop-filter: blur(22px) saturate(1.12) !important;
+}
+
+.auth-card h1,
+.auth-card p,
+.auth-field,
+.auth-card code {
+  color: var(--cupertino-text) !important;
+}
+
+.auth-field input,
+.auth-password-row input {
+  color: var(--cupertino-text) !important;
+  background: #ffffff !important;
+  border-color: var(--cupertino-line) !important;
+}
+
+.auth-password-row button,
+.auth-links button,
+.account-session-bar button {
+  color: var(--cupertino-text) !important;
+  background: #ffffff !important;
+  border-color: var(--cupertino-line) !important;
+}
+
+.auth-message {
+  color: #3b0a83 !important;
+  background: rgba(191, 90, 242, 0.10) !important;
+  border-color: rgba(191, 90, 242, 0.22) !important;
+}
+
+.account-session-bar {
+  background: rgba(255, 255, 255, 0.78) !important;
+  border-bottom: 1px solid rgba(60, 60, 67, 0.10) !important;
+  color: var(--cupertino-muted) !important;
+  backdrop-filter: blur(18px) saturate(1.16) !important;
+}
+
+@media (max-width: 1280px) {
+  .dashboard-overview-grid,
+  .account-dashboard-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  .dashboard-strategies-section .dashboard-strategies-grid:has(.account-card) {
+    grid-template-columns: repeat(2, minmax(280px, 1fr)) !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .app-shell,
+  .app-shell.dark-theme,
+  .app-shell.light-theme {
+    width: 100% !important;
+    padding: 10px !important;
+  }
+
+  .topbar {
+    position: static !important;
+    width: 100% !important;
+  }
+
+  .dashboard-overview-grid,
+  .account-dashboard-grid,
+  .dashboard-strategies-section .dashboard-strategies-grid,
+  .dashboard-strategies-section .dashboard-strategies-grid:has(.account-card),
+  .account-card-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .account-card .strategy-card-header {
+    grid-template-columns: 1fr !important;
+  }
+
+  .account-card .strategy-card-controls {
+    justify-content: flex-start !important;
+    flex-wrap: wrap !important;
+  }
+
+  .strategy-calendar-day,
+  .strategy-calendar-blank {
+    min-height: 58px !important;
+    border-radius: 16px !important;
+  }
+}
+

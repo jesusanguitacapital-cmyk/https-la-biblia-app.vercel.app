@@ -29,7 +29,7 @@ const DEFAULT_DATA: AppData = {
     dataFolder: null,
     appName: 'La Biblia',
     primaryColor: '#111827',
-    theme: 'dark',
+    theme: 'light',
     defaultCurrency: 'EUR',
   },
 }
@@ -788,7 +788,7 @@ function App() {
   })
   const [showAccountAccessInfo, setShowAccountAccessInfo] = useState(false)
   const [appNameDraft, setAppNameDraft] = useState(DEFAULT_DATA.settings.appName ?? 'La Biblia')
-  const [themeDraft, setThemeDraft] = useState<'dark' | 'light'>(DEFAULT_DATA.settings.theme ?? 'dark')
+  const [themeDraft, setThemeDraft] = useState<'dark' | 'light'>(DEFAULT_DATA.settings.theme ?? 'light')
   const [defaultCurrencyDraft, setDefaultCurrencyDraft] = useState<'EUR' | 'USD'>(DEFAULT_DATA.settings.defaultCurrency ?? 'EUR')
   const [pendingExtraction, setPendingExtraction] = useState<OperationExtractionResult | null>(null)
   const [pendingScreenshotPath, setPendingScreenshotPath] = useState('')
@@ -909,7 +909,7 @@ function App() {
   useEffect(() => {
     if (!isSettingsOpen) return
     setAppNameDraft(data.settings.appName ?? DEFAULT_DATA.settings.appName ?? 'La Biblia')
-    setThemeDraft(data.settings.theme ?? DEFAULT_DATA.settings.theme ?? 'dark')
+    setThemeDraft(data.settings.theme ?? DEFAULT_DATA.settings.theme ?? 'light')
     setDefaultCurrencyDraft(data.settings.defaultCurrency ?? DEFAULT_DATA.settings.defaultCurrency ?? 'EUR')
   }, [data.settings.appName, data.settings.theme, data.settings.defaultCurrency, isSettingsOpen])
 
@@ -918,7 +918,7 @@ function App() {
   }, [data.settings.appName])
 
   useEffect(() => {
-    document.body.dataset.appTheme = data.settings.theme ?? 'dark'
+    document.body.dataset.appTheme = data.settings.theme ?? 'light'
     return () => {
       delete document.body.dataset.appTheme
     }
@@ -974,7 +974,7 @@ function App() {
         dataRef.current = nextData
         setData(nextData)
         setAppNameDraft(nextData.settings.appName ?? DEFAULT_DATA.settings.appName ?? 'La Biblia')
-        setThemeDraft(nextData.settings.theme ?? DEFAULT_DATA.settings.theme ?? 'dark')
+        setThemeDraft(nextData.settings.theme ?? DEFAULT_DATA.settings.theme ?? 'light')
         setDefaultCurrencyDraft(nextData.settings.defaultCurrency ?? DEFAULT_DATA.settings.defaultCurrency ?? 'EUR')
         setOperationForm((prev: any) => ({ ...prev, strategyId: nextData.strategies[0]?.id ?? DEFAULT_STRATEGY.id }))
       } catch {
@@ -1436,7 +1436,7 @@ function App() {
       await saveData(importedData)
       setSelectedStrategyId(null)
       setAppNameDraft(importedData.settings.appName ?? DEFAULT_DATA.settings.appName ?? 'La Biblia')
-      setThemeDraft(importedData.settings.theme ?? DEFAULT_DATA.settings.theme ?? 'dark')
+      setThemeDraft(importedData.settings.theme ?? DEFAULT_DATA.settings.theme ?? 'light')
       setDefaultCurrencyDraft(importedData.settings.defaultCurrency ?? DEFAULT_DATA.settings.defaultCurrency ?? 'EUR')
       setMessage('Copia de seguridad importada correctamente.')
     } catch {
@@ -1491,8 +1491,21 @@ function App() {
       if (field !== 'status') return { ...prev, [field]: value }
       const today = new Date().toISOString().slice(0, 10)
       const next = { ...prev, status: value as FundingAccountStatus }
-      if (value !== 'evaluation' && !next.statusChangedDate) next.statusChangedDate = today
-      if (value === 'funded' && !next.fundedDate) next.fundedDate = next.statusChangedDate || today
+
+      if (value === 'evaluation') {
+        return {
+          ...next,
+          statusChangedDate: '',
+          fundedDate: '',
+          suspendedDate: '',
+        }
+      }
+
+      if (!next.statusChangedDate) next.statusChangedDate = today
+      if (value === 'funded') {
+        if (!next.fundedDate) next.fundedDate = next.statusChangedDate || today
+        next.suspendedDate = ''
+      }
       if (value === 'suspended' && !next.suspendedDate) next.suspendedDate = next.statusChangedDate || today
       return next
     })
@@ -1552,26 +1565,31 @@ function App() {
     }
 
     const existing = editingAccountId ? dataRef.current.accounts.find((account) => account.id === editingAccountId) : null
-    const fallbackStatusDate = accountForm.statusChangedDate || existing?.statusChangedAt?.slice(0, 10) || accountForm.purchaseDate
-    const fallbackFundedDate = accountForm.fundedDate || existing?.fundedAt?.slice(0, 10) || ''
-    const fallbackSuspendedDate = accountForm.suspendedDate || existing?.suspendedAt?.slice(0, 10) || fallbackStatusDate
+    const statusDate = accountForm.statusChangedDate || accountForm.purchaseDate
+    const fundedDate = accountForm.fundedDate
+    const suspendedDate = accountForm.suspendedDate || statusDate
 
-    if (accountForm.status !== 'evaluation' && !fallbackStatusDate) {
+    if (accountForm.status !== 'evaluation' && !statusDate) {
       setMessage('Introduce la fecha del cambio de estado de la cuenta.')
+      return
+    }
+
+    if (accountForm.status === 'funded' && !fundedDate) {
+      setMessage('Introduce la fecha fondeada. Si todavía no está aprobada, deja el estado en evaluación.')
       return
     }
 
     const nextStatusChangedAt = accountForm.status === 'evaluation'
       ? undefined
-      : toIsoDateAtNoon(fallbackStatusDate)
+      : toIsoDateAtNoon(statusDate)
     const nextFundedAt = accountForm.status === 'funded'
-      ? toIsoDateAtNoon(fallbackFundedDate || fallbackStatusDate)
-      : accountForm.status === 'suspended'
-        ? (fallbackFundedDate ? toIsoDateAtNoon(fallbackFundedDate) : undefined)
-        : existing?.fundedAt
+      ? toIsoDateAtNoon(fundedDate)
+      : accountForm.status === 'suspended' && fundedDate
+        ? toIsoDateAtNoon(fundedDate)
+        : undefined
     const nextSuspendedAt = accountForm.status === 'suspended'
-      ? toIsoDateAtNoon(fallbackSuspendedDate)
-      : existing?.suspendedAt
+      ? toIsoDateAtNoon(suspendedDate)
+      : undefined
     const statusColor = getFundingStatusColor(accountForm.status)
 
     const accountPayload: FundingAccount = {
@@ -3831,9 +3849,23 @@ function App() {
                     <input type="date" value={accountForm.statusChangedDate} onChange={(event) => handleAccountFormChange('statusChangedDate', event.target.value)} />
                   </label>
                   {accountForm.status === 'funded' || accountForm.status === 'suspended' ? (
-                    <label>
-                        Fecha fondeada opcional
-                      <input type="date" value={accountForm.fundedDate} onChange={(event) => handleAccountFormChange('fundedDate', event.target.value)} />
+                    <label className="account-date-option-field">
+                      <span>{accountForm.status === 'funded' ? 'Fecha fondeada *' : 'Fecha fondeada opcional'}</span>
+                      <input
+                        type="date"
+                        value={accountForm.fundedDate}
+                        disabled={accountForm.status === 'suspended' && !accountForm.fundedDate}
+                        onChange={(event) => handleAccountFormChange('fundedDate', event.target.value)}
+                      />
+                      {accountForm.status === 'suspended' ? (
+                        <button
+                          type="button"
+                          className="account-date-clear-button"
+                          onClick={() => handleAccountFormChange('fundedDate', accountForm.fundedDate ? '' : (accountForm.statusChangedDate || new Date().toISOString().slice(0, 10)))}
+                        >
+                          {accountForm.fundedDate ? 'Marcar no fondeada / no aprobada' : 'Añadir fecha fondeada'}
+                        </button>
+                      ) : null}
                     </label>
                   ) : (
                     <div className="account-form-help">Esta fecha se usa para calcular los días hasta el estado actual.</div>
@@ -3847,7 +3879,7 @@ function App() {
                     Fecha en la que se quemó o suspendió
                     <input type="date" value={accountForm.suspendedDate} onChange={(event) => handleAccountFormChange('suspendedDate', event.target.value)} />
                   </label>
-                  <div className="account-form-help">La fecha fondeada es opcional. Si nunca llegó a fondearse, déjala vacía.</div>
+                  <div className="account-form-help">Si no llegó a fondearse, usa “no fondeada / no aprobada” y no aparecerá evento de fondeo en el calendario.</div>
                 </div>
               ) : null}
 
