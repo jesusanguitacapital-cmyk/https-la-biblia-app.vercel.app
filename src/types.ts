@@ -104,6 +104,7 @@ export interface AppSettings {
   dataFolder: string | null
   appName?: string
   primaryColor?: string
+  backgroundColor?: string
   theme?: 'dark' | 'light'
   visualThemeVersion?: number
   defaultCurrency?: 'EUR' | 'USD'

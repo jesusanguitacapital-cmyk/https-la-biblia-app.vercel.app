@@ -30,11 +30,21 @@ const DEFAULT_DATA: AppData = {
     dataFolder: null,
     appName: 'La Biblia',
     primaryColor: '#007AFF',
+    backgroundColor: '#F5F5F7',
     theme: 'light',
-    visualThemeVersion: 2,
+    visualThemeVersion: 3,
     defaultCurrency: 'EUR',
   },
 }
+
+const APP_BACKGROUND_PRESETS = [
+  { label: 'Gris Apple', value: '#F5F5F7' },
+  { label: 'Blanco', value: '#FFFFFF' },
+  { label: 'Azul hielo', value: '#EEF5FF' },
+  { label: 'Arena', value: '#F7F3EC' },
+  { label: 'Lavanda', value: '#F4F1FA' },
+  { label: 'Verde niebla', value: '#EEF7F2' },
+] as const
 
 const getInitialOperationState = (strategyId = DEFAULT_STRATEGY.id) => ({
   strategyId,
@@ -826,7 +836,7 @@ function App() {
   })
   const [showAccountAccessInfo, setShowAccountAccessInfo] = useState(false)
   const [appNameDraft, setAppNameDraft] = useState(DEFAULT_DATA.settings.appName ?? 'La Biblia')
-  const [themeDraft, setThemeDraft] = useState<'dark' | 'light'>(DEFAULT_DATA.settings.theme ?? 'light')
+  const [backgroundColorDraft, setBackgroundColorDraft] = useState(DEFAULT_DATA.settings.backgroundColor ?? '#F5F5F7')
   const [defaultCurrencyDraft, setDefaultCurrencyDraft] = useState<'EUR' | 'USD'>(DEFAULT_DATA.settings.defaultCurrency ?? 'EUR')
   const [pendingExtraction, setPendingExtraction] = useState<OperationExtractionResult | null>(null)
   const [pendingScreenshotPath, setPendingScreenshotPath] = useState('')
@@ -947,20 +957,20 @@ function App() {
   useEffect(() => {
     if (!isSettingsOpen) return
     setAppNameDraft(data.settings.appName ?? DEFAULT_DATA.settings.appName ?? 'La Biblia')
-    setThemeDraft(data.settings.theme ?? DEFAULT_DATA.settings.theme ?? 'light')
+    setBackgroundColorDraft(data.settings.backgroundColor ?? DEFAULT_DATA.settings.backgroundColor ?? '#F5F5F7')
     setDefaultCurrencyDraft(data.settings.defaultCurrency ?? DEFAULT_DATA.settings.defaultCurrency ?? 'EUR')
-  }, [data.settings.appName, data.settings.theme, data.settings.defaultCurrency, isSettingsOpen])
+  }, [data.settings.appName, data.settings.backgroundColor, data.settings.defaultCurrency, isSettingsOpen])
 
   useEffect(() => {
     document.title = data.settings.appName ?? 'La Biblia'
   }, [data.settings.appName])
 
   useEffect(() => {
-    document.body.dataset.appTheme = data.settings.theme ?? 'light'
+    document.body.dataset.appTheme = 'light'
     return () => {
       delete document.body.dataset.appTheme
     }
-  }, [data.settings.theme])
+  }, [])
 
   useEffect(() => {
     const initialize = async () => {
@@ -1004,14 +1014,19 @@ function App() {
           environment: 'real',
           brokerPassword: undefined,
         }))
-        const needsAppleLightMigration = (nextData.settings?.visualThemeVersion ?? 0) < 2
+        const needsPersonalizationMigration = (nextData.settings?.visualThemeVersion ?? 0) < 3
         nextData.settings = {
           ...DEFAULT_DATA.settings,
           ...(nextData.settings ?? {}),
-          ...(needsAppleLightMigration ? { theme: 'light' as const, primaryColor: '#007AFF', visualThemeVersion: 2 } : {}),
+          theme: 'light',
+          ...(needsPersonalizationMigration ? {
+            primaryColor: '#007AFF',
+            backgroundColor: '#F5F5F7',
+            visualThemeVersion: 3,
+          } : {}),
         }
 
-        if (needsAppleLightMigration) {
+        if (needsPersonalizationMigration) {
           if (isElectron) {
             await window.tradingApp.saveData({ folder: nextData.settings.dataFolder, data: nextData })
           } else {
@@ -1022,7 +1037,7 @@ function App() {
         dataRef.current = nextData
         setData(nextData)
         setAppNameDraft(nextData.settings.appName ?? DEFAULT_DATA.settings.appName ?? 'La Biblia')
-        setThemeDraft(nextData.settings.theme ?? DEFAULT_DATA.settings.theme ?? 'light')
+        setBackgroundColorDraft(nextData.settings.backgroundColor ?? DEFAULT_DATA.settings.backgroundColor ?? '#F5F5F7')
         setDefaultCurrencyDraft(nextData.settings.defaultCurrency ?? DEFAULT_DATA.settings.defaultCurrency ?? 'EUR')
         setOperationForm((prev: any) => ({ ...prev, strategyId: nextData.strategies[0]?.id ?? DEFAULT_STRATEGY.id }))
       } catch {
@@ -1436,7 +1451,9 @@ function App() {
         ...dataRef.current.settings,
         appName: appNameDraft.trim() || DEFAULT_DATA.settings.appName,
         primaryColor: dataRef.current.settings.primaryColor ?? DEFAULT_DATA.settings.primaryColor,
-        theme: themeDraft,
+        backgroundColor: backgroundColorDraft,
+        theme: 'light',
+        visualThemeVersion: 3,
         defaultCurrency: defaultCurrencyDraft,
       },
     })
@@ -1484,7 +1501,7 @@ function App() {
       await saveData(importedData)
       setSelectedStrategyId(null)
       setAppNameDraft(importedData.settings.appName ?? DEFAULT_DATA.settings.appName ?? 'La Biblia')
-      setThemeDraft(importedData.settings.theme ?? DEFAULT_DATA.settings.theme ?? 'light')
+      setBackgroundColorDraft(importedData.settings.backgroundColor ?? DEFAULT_DATA.settings.backgroundColor ?? '#F5F5F7')
       setDefaultCurrencyDraft(importedData.settings.defaultCurrency ?? DEFAULT_DATA.settings.defaultCurrency ?? 'EUR')
       setMessage('Copia de seguridad importada correctamente.')
     } catch {
@@ -2253,7 +2270,6 @@ function App() {
     }
   }, [selectedAccount, selectedAccountId])
 
-  const isLightTheme = data.settings.theme === 'light'
   const accentColor = '#007AFF'
   const accentColorDeep = '#0056B3'
   const visibleCalendarDate = calendarMonthDate
@@ -2274,10 +2290,13 @@ function App() {
 
   return (
     <div
-      className={`app-shell apple-theme ${isLightTheme ? 'light-theme' : 'dark-theme'}`}
+      className="app-shell apple-theme light-theme"
       style={{
         '--accent-color': accentColor,
         '--accent-color-deep': accentColorDeep,
+        '--app-canvas-background': isSettingsOpen
+          ? backgroundColorDraft
+          : (data.settings.backgroundColor ?? DEFAULT_DATA.settings.backgroundColor),
       } as CSSProperties}
     >
       <header className="topbar">
@@ -2309,17 +2328,14 @@ function App() {
             </button>
             <button
               type="button"
-              className="sidebar-action-button"
-              onClick={() => saveData({
-                ...dataRef.current,
-                settings: {
-                  ...dataRef.current.settings,
-                  theme: dataRef.current.settings.theme === 'light' ? 'dark' : 'light',
-                },
-              })}
+              className="sidebar-action-button personalize-action"
+              onClick={() => {
+                closeFloatingMenus()
+                setIsSettingsOpen(true)
+              }}
             >
-              <span aria-hidden="true">{data.settings.theme === 'light' ? '☾' : '☼'}</span>
-              <strong>{data.settings.theme === 'light' ? 'Modo noche' : 'Modo día'}</strong>
+              <span aria-hidden="true">◉</span>
+              <strong>Personalizar</strong>
             </button>
             <button
               type="button"
@@ -3423,17 +3439,45 @@ function App() {
             </div>
 
             <div className="settings-section">
+              <span className="settings-section-label">Personalización</span>
+              <div className="settings-background-picker">
+                <div className="settings-background-heading">
+                  <div>
+                    <strong>Fondo de la aplicación</strong>
+                    <small>Solo cambia el lienzo exterior. Las tarjetas y los calendarios seguirán blancos.</small>
+                  </div>
+                  <label className="settings-color-control">
+                    <input
+                      type="color"
+                      value={backgroundColorDraft}
+                      onChange={(event) => setBackgroundColorDraft(event.target.value.toUpperCase())}
+                      aria-label="Elegir color de fondo"
+                    />
+                    <span>{backgroundColorDraft.toUpperCase()}</span>
+                  </label>
+                </div>
+                <div className="settings-background-presets" aria-label="Colores de fondo recomendados">
+                  {APP_BACKGROUND_PRESETS.map((preset) => (
+                    <button
+                      key={preset.value}
+                      type="button"
+                      className={backgroundColorDraft.toUpperCase() === preset.value ? 'background-preset selected' : 'background-preset'}
+                      onClick={() => setBackgroundColorDraft(preset.value)}
+                      aria-pressed={backgroundColorDraft.toUpperCase() === preset.value}
+                    >
+                      <span style={{ '--preset-color': preset.value } as CSSProperties} aria-hidden="true" />
+                      {preset.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="settings-section">
               <span className="settings-section-label">Aplicación</span>
               <label className="settings-field">
                 <span>Nombre de la aplicación</span>
                 <input value={appNameDraft} onChange={(event) => setAppNameDraft(event.target.value)} placeholder="La Biblia" />
-              </label>
-              <label className="settings-field">
-                <span>Apariencia</span>
-                <select value={themeDraft} onChange={(event) => setThemeDraft(event.target.value as 'dark' | 'light')}>
-                  <option value="dark">Modo noche · grafito</option>
-                  <option value="light">Modo día · papel</option>
-                </select>
               </label>
               <label className="settings-field">
                 <span>Moneda por defecto</span>
