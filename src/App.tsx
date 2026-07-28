@@ -30,6 +30,7 @@ const DEFAULT_DATA: AppData = {
     appName: 'La Biblia',
     primaryColor: '#111827',
     theme: 'light',
+    visualThemeVersion: 1,
     defaultCurrency: 'EUR',
   },
 }
@@ -966,9 +967,19 @@ function App() {
           environment: 'real',
           brokerPassword: undefined,
         }))
+        const needsAppleLightMigration = (nextData.settings?.visualThemeVersion ?? 0) < 1
         nextData.settings = {
           ...DEFAULT_DATA.settings,
           ...(nextData.settings ?? {}),
+          ...(needsAppleLightMigration ? { theme: 'light' as const, visualThemeVersion: 1 } : {}),
+        }
+
+        if (needsAppleLightMigration) {
+          if (isElectron) {
+            await window.tradingApp.saveData({ folder: nextData.settings.dataFolder, data: nextData })
+          } else {
+            await saveUserAppData(user.id, nextData)
+          }
         }
 
         dataRef.current = nextData

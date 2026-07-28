@@ -105,6 +105,7 @@ export interface AppSettings {
   appName?: string
   primaryColor?: string
   theme?: 'dark' | 'light'
+  visualThemeVersion?: number
   defaultCurrency?: 'EUR' | 'USD'
 }
 
