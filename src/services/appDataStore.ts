@@ -5,13 +5,20 @@ const TABLE_NAME = 'app_data_snapshots'
 const METADATA_KEY = 'la_biblia_app_data'
 const METADATA_UPDATED_AT_KEY = 'la_biblia_app_data_updated_at'
 
-const isMissingSnapshotTableError = (error: unknown) => {
+const shouldUseMetadataFallback = (error: unknown) => {
   if (!error || typeof error !== 'object') return false
-  const maybeError = error as { code?: string; message?: string }
+  const maybeError = error as { code?: string; message?: string; status?: number }
+  const message = maybeError.message?.toLowerCase() ?? ''
+
   return maybeError.code === 'PGRST205'
     || maybeError.code === '42P01'
-    || maybeError.message?.toLowerCase().includes('app_data_snapshots')
-    || maybeError.message?.toLowerCase().includes('schema cache')
+    || maybeError.code === '42501'
+    || maybeError.status === 401
+    || maybeError.status === 403
+    || message.includes('app_data_snapshots')
+    || message.includes('schema cache')
+    || message.includes('permission denied')
+    || message.includes('row-level security')
 }
 
 const loadFromUserMetadata = async (userId: string): Promise<AppData | null> => {
@@ -50,7 +57,7 @@ export const loadUserAppData = async (userId: string): Promise<AppData | null> =
     .maybeSingle()
 
   if (error) {
-    if (isMissingSnapshotTableError(error)) {
+    if (shouldUseMetadataFallback(error)) {
       return loadFromUserMetadata(userId)
     }
     throw error
@@ -73,7 +80,7 @@ export const saveUserAppData = async (userId: string, appData: AppData) => {
     }, { onConflict: 'user_id' })
 
   if (error) {
-    if (isMissingSnapshotTableError(error)) {
+    if (shouldUseMetadataFallback(error)) {
       await saveToUserMetadata(appData)
       return
     }
