@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import type { CSSProperties, ChangeEvent } from 'react'
 import type { AppData, FundingAccount, FundingAccountStatus, FundingAccountWithdrawal, Operation, Strategy, TradeSide, ResultType } from './types'
 import './App.css'
@@ -9,6 +9,8 @@ import { extractOperationFromImage } from './aiVision'
 import type { OperationExtractionDraft, OperationExtractionResult } from './aiVision'
 import { useAuth } from './contexts/AuthContext'
 import { loadUserAppData, saveUserAppData } from './services/appDataStore'
+
+const AlgorithmsModule = lazy(() => import('./AlgorithmsModule'))
 
 const DEFAULT_STRATEGY: Strategy = {
   id: 'default-strategy',
@@ -27,6 +29,7 @@ const DEFAULT_DATA: AppData = {
   strategies: [DEFAULT_STRATEGY],
   accounts: [],
   operations: [],
+  algorithms: [],
   settings: {
     dataFolder: null,
     appName: 'La Biblia',
@@ -805,7 +808,7 @@ function App() {
   const [openOperationMenuId, setOpenOperationMenuId] = useState<string | null>(null)
   const [openAccountMenuId, setOpenAccountMenuId] = useState<string | null>(null)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
-  const [selectedModule, setSelectedModule] = useState<'strategies' | 'accounts'>('strategies')
+  const [selectedModule, setSelectedModule] = useState<'strategies' | 'accounts' | 'algorithms'>('strategies')
   const [selectedTab, setSelectedTab] = useState<'grafico' | 'ia'>('grafico')
   const fileInputRef = useRef<HTMLInputElement | null>(null)
   const backupInputRef = useRef<HTMLInputElement | null>(null)
@@ -1009,6 +1012,7 @@ function App() {
         }
 
         nextData.accounts = Array.isArray(nextData.accounts) ? nextData.accounts.map(normalizeFundingAccount) : []
+        nextData.algorithms = Array.isArray(nextData.algorithms) ? nextData.algorithms : []
 
         nextData.strategies = nextData.strategies.map((strategy) => ({
           ...strategy,
@@ -1492,6 +1496,7 @@ function App() {
         })),
         accounts: Array.isArray(raw.accounts) ? raw.accounts.map(normalizeFundingAccount) : [],
         operations: raw.operations as Operation[],
+        algorithms: Array.isArray(raw.algorithms) ? raw.algorithms : [],
         settings: {
           ...DEFAULT_DATA.settings,
           ...(raw.settings ?? {}),
@@ -2317,6 +2322,7 @@ function App() {
           <div className="environment-switcher module-switcher">
             <button type="button" className={selectedModule === 'strategies' ? 'pill active' : 'pill'} onClick={() => setSelectedModule('strategies')}>CONTROL DE ESTRATEGIAS</button>
             <button type="button" className={selectedModule === 'accounts' ? 'pill active' : 'pill'} onClick={() => setSelectedModule('accounts')}>CONTROL DE CUENTAS</button>
+            <button type="button" className={selectedModule === 'algorithms' ? 'pill active' : 'pill'} onClick={() => setSelectedModule('algorithms')}>CONTROL DE ALGORITMOS</button>
           </div>
           <div className="sidebar-quick-actions" aria-label="Acciones rápidas">
             <button type="button" className="sidebar-action-button" onClick={handleExcelExport}>
@@ -2841,6 +2847,18 @@ function App() {
           </section>
         </div>
         )
+      ) : selectedModule === 'algorithms' ? (
+        <Suspense fallback={<section className="section-header"><p>Cargando Control de Algoritmos…</p></section>}>
+          <AlgorithmsModule
+            algorithms={data.algorithms}
+            defaultCurrency={data.settings.defaultCurrency ?? 'EUR'}
+            onNotify={setMessage}
+            onChange={async (algorithms, nextMessage) => {
+              await saveData({ ...dataRef.current, algorithms })
+              setMessage(nextMessage)
+            }}
+          />
+        </Suspense>
       ) : (
         selectedAccountId ? (
           <section className="strategy-page">

@@ -1,0 +1,464 @@
+#root .algorithms-module {
+  --algo-blue: #007aff;
+  --algo-green: #34c759;
+  --algo-red: #ff3b30;
+  --algo-purple: #af52de;
+  --algo-text: #1d1d1f;
+  --algo-secondary: #6e6e73;
+  --algo-border: #e5e5ea;
+  --algo-fill: #f5f5f7;
+  --algo-shadow: 0 12px 34px rgba(0, 0, 0, 0.055);
+  color: var(--algo-text);
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+  padding: 0 0 28px;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", sans-serif;
+}
+
+#root .algorithms-module *,
+#root .algorithms-module *::before,
+#root .algorithms-module *::after { box-sizing: border-box; }
+
+#root .algo-page-header,
+#root .algo-detail-header,
+#root .algo-panel,
+#root .algo-robots-section {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid rgba(60, 60, 67, 0.14);
+  border-radius: 24px;
+  box-shadow: var(--algo-shadow);
+}
+
+#root .algo-page-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  padding: 24px 28px;
+}
+
+#root .algo-page-header h1,
+#root .algo-detail-header h1 {
+  color: var(--algo-text);
+  font-size: clamp(1.65rem, 2.2vw, 2.35rem);
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 1.05;
+  margin: 3px 0 8px;
+}
+
+#root .algo-page-header p,
+#root .algo-detail-header p,
+#root .algo-panel-heading p,
+#root .algo-section-heading p,
+#root .algo-card-heading p {
+  color: var(--algo-secondary);
+  font-size: 0.88rem;
+  line-height: 1.45;
+  margin: 0;
+}
+
+#root .algo-eyebrow {
+  color: var(--algo-blue);
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 750;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+#root .algo-button,
+#root .algo-icon-button,
+#root .algo-text-button,
+#root .algo-calendar-nav button,
+#root .algo-row-actions button,
+#root .algo-pagination button,
+#root .algo-code-toolbar button,
+#root .algo-version-list button {
+  -webkit-tap-highlight-color: transparent;
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--algo-border);
+  border-radius: 12px;
+  color: var(--algo-text);
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 650;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 15px;
+  transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+
+#root .algo-button:hover,
+#root .algo-icon-button:hover,
+#root .algo-row-actions button:hover { background: #f7f7f9; border-color: #c7c7cc; }
+#root .algo-button:active, #root .algo-icon-button:active { transform: scale(0.97); }
+#root .algo-button.primary { background: var(--algo-blue); border-color: var(--algo-blue); color: #fff; box-shadow: 0 7px 18px rgba(0, 122, 255, 0.2); }
+#root .algo-button.ai { background: linear-gradient(135deg, #5e5ce6, #af52de 55%, #ff2d55); border: 0; color: #fff; box-shadow: 0 7px 20px rgba(175, 82, 222, 0.22); }
+#root .algo-button.danger, #root .algo-row-actions .danger { color: var(--algo-red); }
+#root .algo-button.danger:not(.subtle) { background: #fff2f1; border-color: #ffd0cd; }
+#root .algo-button.subtle { background: #fff; }
+#root .algo-button:disabled, #root .algo-pagination button:disabled { cursor: default; opacity: 0.38; }
+
+#root .algo-panel, #root .algo-robots-section { padding: 26px; }
+#root .algo-panel-heading, #root .algo-section-heading, #root .algo-card-heading { align-items: flex-start; display: flex; gap: 18px; justify-content: space-between; }
+#root .algo-panel-heading h2, #root .algo-section-heading h2, #root .algo-section-heading h3, #root .algo-card-heading h3 { color: var(--algo-text); font-size: 1.28rem; letter-spacing: -0.025em; margin: 0 0 5px; }
+#root .algo-card-heading h3, #root .algo-section-heading h3 { font-size: 1rem; }
+#root .algo-header-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+
+#root .algo-filter-bar {
+  align-items: end;
+  background: var(--algo-fill);
+  border: 1px solid var(--algo-border);
+  border-radius: 16px;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(220px, 1.6fr) repeat(3, minmax(140px, 0.6fr));
+  margin: 22px 0 16px;
+  padding: 12px;
+}
+#root .algo-filter-bar.compact { grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); }
+#root .algo-filter-bar.operations { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+#root .algo-filter-bar label, #root .algo-import-controls label, #root .algo-form-grid label, #root .algo-mapping-grid label, #root .algo-document-grid label, #root .algo-code-toolbar label { display: grid; gap: 6px; min-width: 0; }
+#root .algo-filter-bar label > span, #root .algo-import-controls label > span, #root .algo-form-grid label > span, #root .algo-mapping-grid label > span, #root .algo-document-grid label > span, #root .algo-code-toolbar label > span { color: var(--algo-secondary); font-size: 0.66rem; font-weight: 700; letter-spacing: 0.035em; }
+#root .algo-filter-bar input, #root .algo-filter-bar select, #root .algo-import-controls input, #root .algo-import-controls select, #root .algo-form-grid input, #root .algo-form-grid select, #root .algo-form-grid textarea, #root .algo-mapping-grid select, #root .algo-document-grid textarea, #root .algo-code-toolbar input { background: #fff; border: 1px solid var(--algo-border); border-radius: 11px; color: var(--algo-text); font: inherit; font-size: 0.8rem; min-height: 40px; outline: 0; padding: 9px 11px; width: 100%; }
+#root .algo-filter-bar input:focus, #root .algo-filter-bar select:focus, #root .algo-import-controls input:focus, #root .algo-import-controls select:focus, #root .algo-form-grid input:focus, #root .algo-form-grid textarea:focus, #root .algo-form-grid select:focus, #root .algo-mapping-grid select:focus, #root .algo-document-grid textarea:focus { border-color: rgba(0, 122, 255, 0.66); box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1); }
+#root .algo-text-button { align-self: end; background: transparent; border-color: transparent; color: var(--algo-blue); padding: 0 8px; }
+
+#root .algo-metrics-grid { display: grid; gap: 10px; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 16px 0; }
+#root .algo-metrics-grid.global { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+#root .algo-metric-card { align-items: center; background: #fff; border: 1px solid var(--algo-border); border-radius: 17px; display: flex; gap: 12px; min-height: 100px; min-width: 0; padding: 14px; }
+#root .algo-metric-icon { align-items: center; background: #f2f2f7; border-radius: 11px; color: var(--algo-secondary); display: flex; flex: 0 0 38px; font-size: 0.92rem; height: 38px; justify-content: center; }
+#root .algo-metric-card > div { display: grid; gap: 2px; min-width: 0; }
+#root .algo-metric-card > div > span, #root .algo-metric-card small { color: var(--algo-secondary); font-size: 0.68rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#root .algo-metric-card strong { color: var(--algo-text); font-size: clamp(0.94rem, 1.3vw, 1.25rem); letter-spacing: -0.035em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#root .algo-metric-card.positive .algo-metric-icon { background: #edfbf1; color: var(--algo-green); }
+#root .algo-metric-card.positive strong, #root .positive { color: #248a3d !important; }
+#root .algo-metric-card.negative .algo-metric-icon { background: #fff0ef; color: var(--algo-red); }
+#root .algo-metric-card.negative strong, #root .negative { color: #d70015 !important; }
+#root .algo-metric-card.blue .algo-metric-icon { background: #eef6ff; color: var(--algo-blue); }
+#root .algo-metric-card.purple .algo-metric-icon { background: #f7effb; color: var(--algo-purple); }
+
+#root .algo-chart-grid { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+#root .algo-chart-card, #root .algo-calendar-card { background: #fff; border: 1px solid var(--algo-border); border-radius: 20px; margin-top: 12px; min-width: 0; padding: 18px; }
+#root .algo-chart-wrap { min-width: 0; overflow: hidden; }
+#root .algo-chart { display: block; height: auto; min-height: 250px; width: 100%; }
+#root .algo-chart-legend { align-items: center; color: var(--algo-secondary); display: flex; flex-wrap: wrap; font-size: 0.7rem; gap: 14px; justify-content: flex-end; min-height: 26px; }
+#root .algo-chart-legend span { align-items: center; display: inline-flex; gap: 6px; }
+#root .algo-chart-legend i { border-radius: 99px; height: 3px; width: 18px; }
+#root .algo-grid-line { stroke: #dfe1e7; stroke-dasharray: 4 8; stroke-width: 1; }
+#root .algo-axis-label { fill: #8e8e93; font-size: 11px; }
+#root .algo-chart-path { animation: algo-line-reveal 650ms ease both; filter: drop-shadow(0 3px 4px rgba(0, 122, 255, 0.1)); }
+#root .algo-chart-point { cursor: pointer; transition: r 150ms ease; }
+#root .algo-chart-point:hover { r: 7; }
+#root .algo-chart-empty { align-items: center; color: var(--algo-secondary); display: flex; font-size: 0.8rem; justify-content: center; min-height: 250px; }
+@keyframes algo-line-reveal { from { opacity: 0; stroke-dasharray: 1100; stroke-dashoffset: 1100; } to { opacity: 1; stroke-dasharray: 1100; stroke-dashoffset: 0; } }
+
+#root .algo-insight-strip { align-items: center; background: #f7f7fa; border: 1px solid var(--algo-border); border-radius: 15px; display: flex; flex-wrap: wrap; font-size: 0.73rem; gap: 12px 22px; margin-top: 14px; padding: 12px 14px; }
+#root .algo-insight-strip strong { color: var(--algo-purple); }
+#root .algo-insight-strip span { color: var(--algo-secondary); }
+
+#root .algo-robots-section { min-height: 210px; }
+#root .algo-robot-grid { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 18px; }
+#root .algo-robot-card { background: #fff; border: 1px solid var(--algo-border); border-radius: 20px; box-shadow: 0 7px 22px rgba(0, 0, 0, 0.04); cursor: pointer; min-width: 0; overflow: visible; padding: 16px; position: relative; transition: box-shadow 180ms ease, transform 180ms ease; }
+#root .algo-robot-card::before { background: var(--robot-color); border-radius: 20px 20px 0 0; content: ""; height: 3px; inset: -1px -1px auto; position: absolute; }
+#root .algo-robot-card:hover { box-shadow: 0 15px 34px rgba(0, 0, 0, 0.08); transform: translateY(-2px); }
+#root .algo-robot-card-top { align-items: center; display: flex; gap: 10px; min-width: 0; }
+#root .algo-robot-icon { align-items: center; background: color-mix(in srgb, var(--robot-color, #007aff) 12%, white); border: 1px solid color-mix(in srgb, var(--robot-color, #007aff) 28%, white); border-radius: 12px; color: var(--robot-color, #007aff); display: flex; flex: 0 0 42px; font-size: 1.15rem; height: 42px; justify-content: center; }
+#root .algo-robot-title { display: grid; flex: 1 1 auto; min-width: 0; }
+#root .algo-robot-title strong { font-size: 0.96rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#root .algo-robot-title small, #root .algo-robot-card > p { color: var(--algo-secondary); font-size: 0.7rem; }
+#root .algo-robot-card > p { -webkit-box-orient: vertical; -webkit-line-clamp: 2; display: -webkit-box; line-height: 1.4; min-height: 2em; overflow: hidden; }
+#root .algo-icon-button { border-radius: 50%; font-size: 0.66rem; height: 38px; min-height: 38px; padding: 0; width: 38px; }
+#root .algo-menu-shell { position: relative; }
+#root .algo-menu { background: rgba(255, 255, 255, 0.98); border: 1px solid var(--algo-border); border-radius: 14px; box-shadow: 0 18px 40px rgba(0, 0, 0, 0.16); display: grid; min-width: 180px; padding: 6px; position: absolute; right: 0; top: calc(100% + 7px); z-index: 80; }
+#root .algo-menu button { background: transparent; border: 0; border-radius: 9px; color: var(--algo-text); cursor: pointer; font: inherit; font-size: 0.78rem; font-weight: 540; padding: 9px 10px; text-align: left; }
+#root .algo-menu button:hover { background: var(--algo-fill); }
+#root .algo-menu button.danger { color: var(--algo-red); }
+#root .algo-badges { display: flex; flex-wrap: wrap; gap: 6px; margin: 13px 0; }
+#root .algo-badges > span, #root .algo-status { background: var(--algo-fill); border: 1px solid var(--algo-border); border-radius: 999px; color: var(--algo-secondary); font-size: 0.63rem; font-weight: 700; padding: 5px 8px; }
+#root .algo-status.active { background: #ebf9ee; border-color: #c4ebcc; color: #248a3d; }
+#root .algo-status.testing { background: #eef6ff; border-color: #c6ddff; color: #0066d6; }
+#root .algo-status.development { background: #f7effb; border-color: #e5c9f2; color: #8944a8; }
+#root .algo-status.backtesting { background: #eef6ff; border-color: #c6ddff; color: #0066d6; }
+#root .algo-status.demo { background: #fff7e8; border-color: #ffe0a3; color: #a55b00; }
+#root .algo-status.live { background: #ebf9ee; border-color: #c4ebcc; color: #248a3d; }
+#root .algo-status.paused { background: #fff7e8; border-color: #ffe0a3; color: #a55b00; }
+#root .algo-status.discarded { background: #fff0ef; border-color: #ffd0cd; color: #d70015; }
+#root .algo-status.archived { background: #f2f2f7; color: #6e6e73; }
+#root .algo-card-dates { color: var(--algo-secondary); display: flex; flex-wrap: wrap; font-size: 0.58rem; gap: 5px 12px; margin: 10px 0; }
+#root .algo-card-health { border-top: 1px solid var(--algo-border); display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; padding-top: 10px; }
+#root .algo-card-health span { background: var(--algo-fill); border-radius: 99px; color: #8e8e93; font-size: 0.57rem; font-weight: 650; padding: 4px 7px; }
+#root .algo-card-health span.ready { background: #ebf9ee; color: #248a3d; }
+#root .algo-robot-stats { display: grid; gap: 6px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+#root .algo-robot-stats > div { background: var(--algo-fill); border-radius: 11px; display: grid; gap: 2px; padding: 9px; }
+#root .algo-robot-stats span { color: var(--algo-secondary); font-size: 0.62rem; }
+#root .algo-robot-stats strong { font-size: 0.78rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+#root .algo-empty-state { align-items: center; color: var(--algo-secondary); display: flex; flex-direction: column; justify-content: center; min-height: 260px; padding: 28px; text-align: center; }
+#root .algo-empty-state > span { color: var(--algo-blue); font-size: 2.2rem; }
+#root .algo-empty-state h3 { color: var(--algo-text); margin: 10px 0 4px; }
+#root .algo-empty-state p { font-size: 0.8rem; margin: 0 0 16px; }
+#root .algo-empty-state.compact { min-height: 300px; }
+#root .algo-empty-inline { color: var(--algo-secondary); font-size: 0.78rem; padding: 30px; text-align: center; }
+
+#root .algo-detail-header { align-items: center; display: grid; gap: 16px; grid-template-columns: auto minmax(0, 1fr) auto; padding: 20px 24px; position: relative; }
+#root .algo-detail-header::before { background: var(--robot-color); border-radius: 24px 24px 0 0; content: ""; height: 3px; inset: -1px -1px auto; position: absolute; }
+#root .algo-back-button { align-items: center; background: transparent; border: 0; color: var(--algo-blue); cursor: pointer; display: flex; font: inherit; font-size: 0.75rem; gap: 3px; padding: 8px; }
+#root .algo-back-button:first-letter { font-size: 1.5rem; }
+#root .algo-detail-title { align-items: center; display: flex; gap: 13px; min-width: 0; }
+#root .algo-detail-title h1 { font-size: 1.55rem; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#root .algo-tabs { background: rgba(255, 255, 255, 0.92); border: 1px solid var(--algo-border); border-radius: 16px; display: flex; gap: 3px; overflow-x: auto; padding: 5px; scrollbar-width: none; }
+#root .algo-tabs::-webkit-scrollbar { display: none; }
+#root .algo-tabs button { align-items: center; background: transparent; border: 0; border-radius: 11px; color: var(--algo-secondary); cursor: pointer; display: flex; flex: 0 0 auto; font: inherit; font-size: 0.72rem; font-weight: 650; gap: 5px; min-height: 38px; padding: 0 13px; }
+#root .algo-tabs button.active { background: #fff; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); color: var(--algo-blue); }
+#root .algo-tabs small { align-items: center; background: var(--algo-fill); border-radius: 99px; display: inline-flex; font-size: 0.55rem; height: 18px; justify-content: center; min-width: 18px; padding: 0 4px; }
+
+#root .algo-calendar-card { margin-top: 14px; }
+#root .algo-calendar-nav { display: flex; gap: 5px; }
+#root .algo-calendar-nav button { border-radius: 10px; min-height: 34px; padding: 0 12px; }
+#root .algo-calendar-weekdays, #root .algo-calendar-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+#root .algo-calendar-weekdays { margin-top: 17px; }
+#root .algo-calendar-weekdays span { color: var(--algo-secondary); font-size: 0.63rem; font-weight: 700; padding: 7px; text-align: center; text-transform: uppercase; }
+#root .algo-calendar-grid { border: 1px solid var(--algo-border); border-radius: 14px; overflow: hidden; }
+#root .algo-calendar-grid > button, #root .algo-calendar-grid > .blank { background: #fff; border: 0; border-bottom: 1px solid var(--algo-border); border-right: 1px solid var(--algo-border); color: var(--algo-text); min-height: 76px; padding: 8px; text-align: left; }
+#root .algo-calendar-grid > button { cursor: pointer; display: flex; flex-direction: column; gap: 4px; }
+#root .algo-calendar-grid > button:hover { background: #f7faff; }
+#root .algo-calendar-grid > button strong { font-size: 0.73rem; }
+#root .algo-calendar-grid > button span { color: var(--algo-secondary); font-size: 0.61rem; }
+#root .algo-calendar-grid > button small { border-radius: 6px; font-size: 0.56rem; margin-top: auto; overflow: hidden; padding: 3px 5px; text-overflow: ellipsis; white-space: nowrap; }
+#root .algo-calendar-grid > button.has-profit small { background: #eaf8ee; color: #248a3d; }
+#root .algo-calendar-grid > button.has-loss small { background: #fff0ef; color: #d70015; }
+#root .algo-calendar-grid > .blank { background: #fafafa; }
+
+#root .algo-table-wrap { border: 1px solid var(--algo-border); border-radius: 16px; margin-top: 14px; overflow: auto; }
+#root .algo-table { border-collapse: collapse; color: var(--algo-text); font-size: 0.72rem; min-width: 920px; width: 100%; }
+#root .algo-table th { background: #f7f7f9; color: var(--algo-secondary); font-size: 0.62rem; letter-spacing: 0.04em; padding: 11px; text-align: left; text-transform: uppercase; }
+#root .algo-table td { border-top: 1px solid var(--algo-border); padding: 11px; vertical-align: middle; }
+#root .algo-table td > strong, #root .algo-table td > small { display: block; }
+#root .algo-table td > small { color: var(--algo-secondary); font-size: 0.6rem; margin-top: 2px; }
+#root .algo-table tr.invalid td { background: #fff5f4; }
+#root .algo-table tr.duplicate td { background: #fffaf0; }
+#root .algo-side { border-radius: 99px; font-size: 0.62rem; font-weight: 700; padding: 4px 7px; }
+#root .algo-side.long { background: #ebf9ee; color: #248a3d; }
+#root .algo-side.short { background: #fff0ef; color: #d70015; }
+#root .algo-row-actions { display: flex; gap: 5px; justify-content: flex-end; }
+#root .algo-row-actions button { min-height: 31px; padding: 0 8px; }
+#root .algo-pagination { align-items: center; color: var(--algo-secondary); display: flex; font-size: 0.72rem; justify-content: space-between; padding: 14px 2px 0; }
+#root .algo-pagination > div { align-items: center; display: flex; gap: 8px; }
+#root .algo-pagination button { min-height: 34px; padding: 0 11px; }
+
+#root .algo-dropzone { align-items: center; background: #f7faff; border: 1.5px dashed #9ac8ff; border-radius: 20px; display: flex; flex-direction: column; justify-content: center; margin-top: 20px; min-height: 220px; padding: 28px; text-align: center; transition: background 160ms ease, border-color 160ms ease; }
+#root .algo-dropzone:hover { background: #eff6ff; border-color: var(--algo-blue); }
+#root .algo-dropzone > span { color: var(--algo-blue); font-size: 2rem; }
+#root .algo-dropzone h3 { margin: 8px 0 4px; }
+#root .algo-dropzone p { color: var(--algo-secondary); font-size: 0.76rem; margin: 0 0 15px; }
+#root .algo-security-note { background: #edfbf1; border-radius: 99px; color: #248a3d; font-size: 0.66rem; font-weight: 650; padding: 6px 9px; }
+#root .algo-import-workspace { display: grid; gap: 14px; margin-top: 16px; }
+#root .algo-import-summary { display: grid; gap: 8px; grid-template-columns: 1.7fr repeat(4, minmax(0, 0.7fr)); }
+#root .algo-import-summary > div { background: var(--algo-fill); border-radius: 13px; display: grid; gap: 2px; padding: 12px; }
+#root .algo-import-summary span, #root .algo-import-summary small { color: var(--algo-secondary); font-size: 0.62rem; }
+#root .algo-import-summary strong { font-size: 0.78rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#root .algo-import-controls { display: grid; gap: 10px; grid-template-columns: repeat(3, minmax(160px, 1fr)); }
+#root .algo-import-diagnostics { background: #f7f7f9; border: 1px solid var(--algo-border); border-radius: 14px; color: var(--algo-secondary); display: flex; flex-wrap: wrap; font-size: 0.66rem; gap: 8px 18px; padding: 10px 12px; }
+#root .algo-import-diagnostics strong { color: var(--algo-text); }
+#root .algo-mapping-grid { background: var(--algo-fill); border-radius: 16px; display: grid; gap: 9px; grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 14px; }
+#root .algo-mapping-grid label.missing > span { color: var(--algo-red); }
+#root .algo-preview-table h3 { font-size: 0.95rem; margin: 4px 0 -4px; }
+#root .algo-import-actions { align-items: center; background: #f7faff; border-radius: 14px; display: flex; justify-content: space-between; padding: 12px 14px; }
+#root .algo-import-actions p { color: var(--algo-secondary); font-size: 0.72rem; margin: 0; }
+#root .algo-subsection { border-top: 1px solid var(--algo-border); margin-top: 24px; padding-top: 22px; }
+#root .algo-import-history, #root .algo-version-list { display: grid; gap: 7px; margin-top: 12px; }
+#root .algo-import-history article, #root .algo-version-list article { align-items: center; background: var(--algo-fill); border-radius: 13px; display: grid; gap: 12px; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr) auto; padding: 11px 13px; }
+#root .algo-import-history article > div, #root .algo-version-list article > div { display: grid; gap: 2px; }
+#root .algo-import-history span, #root .algo-version-list span { color: var(--algo-secondary); font-size: 0.64rem; }
+
+#root .algo-code-layout { border: 1px solid var(--algo-border); border-radius: 18px; display: grid; grid-template-columns: 220px minmax(0, 1fr); margin-top: 18px; min-height: 520px; overflow: hidden; }
+#root .algo-code-files { background: #f7f7f9; border-right: 1px solid var(--algo-border); display: flex; flex-direction: column; gap: 4px; padding: 12px; }
+#root .algo-code-files > span { color: var(--algo-secondary); font-size: 0.64rem; font-weight: 700; padding: 5px 7px 9px; text-transform: uppercase; }
+#root .algo-code-files > button { align-items: center; background: transparent; border: 0; border-radius: 10px; color: var(--algo-text); cursor: pointer; display: flex; gap: 9px; padding: 8px; text-align: left; }
+#root .algo-code-files > button.active { background: #fff; box-shadow: 0 2px 9px rgba(0, 0, 0, 0.08); }
+#root .algo-code-files i { align-items: center; background: #eaf3ff; border-radius: 7px; color: var(--algo-blue); display: flex; font-size: 0.55rem; font-style: normal; font-weight: 800; height: 28px; justify-content: center; width: 28px; }
+#root .algo-code-files button > span { display: grid; min-width: 0; }
+#root .algo-code-files strong { font-size: 0.7rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#root .algo-code-files small, #root .algo-code-files p { color: var(--algo-secondary); font-size: 0.58rem; }
+#root .algo-code-editor { display: flex; flex-direction: column; min-width: 0; }
+#root .algo-code-toolbar { align-items: center; border-bottom: 1px solid var(--algo-border); display: flex; flex-wrap: wrap; gap: 8px; min-height: 54px; padding: 8px 10px; }
+#root .algo-code-toolbar > strong { font-size: 0.75rem; margin-right: auto; }
+#root .algo-code-toolbar label { display: flex; }
+#root .algo-code-toolbar label > span { display: none; }
+#root .algo-code-toolbar input { min-height: 34px; width: 150px; }
+#root .algo-code-toolbar > span { color: var(--algo-secondary); font-size: 0.62rem; }
+#root .algo-code-toolbar button { min-height: 32px; padding: 0 9px; }
+#root .algo-code-area { background: #fbfbfd; display: grid; flex: 1 1 auto; grid-template-columns: 48px minmax(0, 1fr); min-height: 410px; overflow: hidden; }
+#root .algo-code-area pre { background: #f2f2f7; border-right: 1px solid var(--algo-border); color: #8e8e93; font: 11px/1.65 "SFMono-Regular", Consolas, monospace; margin: 0; padding: 16px 10px; text-align: right; }
+#root .algo-code-area textarea { background: #fbfbfd; border: 0; color: #1d1d1f; font: 12px/1.65 "SFMono-Regular", Consolas, monospace; min-height: 410px; outline: 0; overflow: auto; padding: 16px; resize: vertical; tab-size: 4; width: 100%; }
+#root .algo-code-editor.fullscreen { background: #fff; inset: 12px; position: fixed; z-index: 1200; }
+#root .algo-code-editor.fullscreen .algo-code-area, #root .algo-code-editor.fullscreen .algo-code-area textarea { min-height: 0; }
+#root .algo-code-actions { align-items: center; border-top: 1px solid var(--algo-border); display: flex; justify-content: space-between; padding: 9px; }
+#root .algo-version-labels span { background: #fff; border-radius: 99px; padding: 4px 7px; width: fit-content; }
+#root .algo-version-labels span.stable { background: #ebf9ee; color: #248a3d; }
+#root .algo-version-labels span.real { background: #eef6ff; color: #0066d6; }
+#root .algo-version-list article > div:last-child { display: flex; flex-wrap: wrap; gap: 5px; justify-content: flex-end; }
+#root .algo-version-list button { min-height: 30px; padding: 0 8px; }
+
+#root .algo-document-toolbar { align-items: center; background: var(--algo-fill); border: 1px solid var(--algo-border); border-radius: 14px; display: flex; flex-wrap: wrap; gap: 6px; margin-top: 18px; padding: 8px; }
+#root .algo-document-toolbar > span { color: var(--algo-secondary); font-size: 0.62rem; margin: 0 auto 0 4px; }
+#root .algo-document-toolbar button { background: #fff; border: 1px solid var(--algo-border); border-radius: 9px; color: var(--algo-text); cursor: pointer; font: inherit; font-size: 0.65rem; min-height: 32px; padding: 0 9px; }
+#root .algo-document-grid { display: grid; gap: 13px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 20px; }
+#root .algo-document-grid label.wide { grid-column: 1 / -1; }
+#root .algo-document-grid textarea { line-height: 1.55; min-height: 145px; resize: vertical; }
+#root .algo-document-grid label.wide textarea { min-height: 120px; }
+#root .algo-unsaved-badge { background: #fff7e8; border: 1px solid #ffe0a3; border-radius: 99px; color: #a55b00; display: inline-flex; font-size: 0.62rem; font-weight: 700; margin-top: 8px; padding: 5px 8px; }
+
+#root .ai-text { background: linear-gradient(90deg, #5e5ce6, #af52de, #ff2d55); -webkit-background-clip: text; background-clip: text; color: transparent; }
+#root .algo-analysis-warning { background: #fff9ec; border: 1px solid #ffe2a8; border-radius: 16px; margin-top: 18px; padding: 18px; }
+#root .algo-analysis-warning strong { color: #8a4b00; }
+#root .algo-analysis-warning p { color: #8a6b3c; font-size: 0.78rem; margin: 5px 0 0; }
+#root .algo-analysis-hero { align-items: center; background: linear-gradient(135deg, #f4f1ff, #fff5fb); border: 1px solid #e5d9f5; border-radius: 20px; display: flex; gap: 20px; justify-content: space-between; margin-top: 18px; padding: 22px; }
+#root .algo-analysis-hero span { color: var(--algo-purple); font-size: 0.68rem; font-weight: 700; text-transform: uppercase; }
+#root .algo-analysis-hero h3 { font-size: 1.25rem; margin: 4px 0; }
+#root .algo-analysis-hero p { color: var(--algo-secondary); font-size: 0.76rem; margin: 0; }
+#root .algo-analysis-hero > .positive-score, #root .algo-analysis-hero > .negative-score { background: #fff; border-radius: 99px; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08); padding: 9px 12px; }
+#root .algo-analysis-hero > .positive-score { color: #248a3d; }
+#root .algo-analysis-hero > .negative-score { color: #d70015; }
+#root .algo-analysis-grid, #root .algo-distribution-grid { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 14px; }
+#root .algo-analysis-grid article, #root .algo-distribution-grid article { background: #fff; border: 1px solid var(--algo-border); border-radius: 16px; padding: 15px; }
+#root .algo-analysis-grid h3, #root .algo-distribution-grid h3 { font-size: 0.88rem; margin: 0 0 10px; }
+#root .algo-analysis-grid ul { color: var(--algo-secondary); font-size: 0.72rem; line-height: 1.55; margin: 0; padding-left: 18px; }
+#root .algo-distribution-grid article > div { align-items: center; border-top: 1px solid var(--algo-border); display: grid; font-size: 0.7rem; gap: 7px; grid-template-columns: minmax(0, 1fr) auto auto; padding: 8px 0; }
+#root .algo-distribution-grid small { color: var(--algo-secondary); font-size: 0.58rem; }
+
+#root .algo-settings-facts { display: grid; gap: 10px; grid-template-columns: repeat(4, minmax(0, 1fr)); margin-top: 18px; }
+#root .algo-settings-facts > div { background: var(--algo-fill); border-radius: 13px; display: grid; gap: 4px; padding: 14px; }
+#root .algo-settings-facts span { color: var(--algo-secondary); font-size: 0.64rem; }
+#root .algo-settings-facts strong { font-size: 0.76rem; }
+#root .algo-attachment-grid { display: grid; gap: 8px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 12px; }
+#root .algo-attachment-grid article { align-items: center; background: var(--algo-fill); border-radius: 13px; display: grid; gap: 10px; grid-template-columns: auto minmax(0, 1fr) auto auto auto; padding: 11px; }
+#root .algo-attachment-grid article > span { color: var(--algo-blue); font-size: 1.2rem; }
+#root .algo-attachment-grid article > div { display: grid; min-width: 0; }
+#root .algo-attachment-grid strong { font-size: 0.72rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#root .algo-attachment-grid small { color: var(--algo-secondary); font-size: 0.6rem; }
+#root .algo-attachment-grid a, #root .algo-attachment-grid button { background: transparent; border: 0; color: var(--algo-blue); cursor: pointer; font: inherit; font-size: 0.65rem; text-decoration: none; }
+#root .algo-attachment-grid button { color: var(--algo-red); }
+#root .algo-danger-zone { align-items: center; background: #fff6f5; border: 1px solid #ffd6d3; border-radius: 16px; display: flex; gap: 10px; margin-top: 22px; padding: 16px; }
+#root .algo-danger-zone > div { margin-right: auto; }
+#root .algo-danger-zone h3 { font-size: 0.9rem; margin: 0 0 4px; }
+#root .algo-danger-zone p { color: var(--algo-secondary); font-size: 0.7rem; margin: 0; }
+
+#root .algo-modal-overlay { align-items: center; background: rgba(29, 29, 31, 0.28); backdrop-filter: blur(14px); display: flex; inset: 0; justify-content: center; padding: 20px; position: fixed; z-index: 1000; }
+#root .algo-modal { background: rgba(255, 255, 255, 0.98); border: 1px solid rgba(255, 255, 255, 0.8); border-radius: 24px; box-shadow: 0 28px 80px rgba(0, 0, 0, 0.25); max-height: calc(100vh - 40px); max-width: 760px; overflow: auto; padding: 22px; width: 100%; }
+#root .algo-modal.trade { max-width: 800px; }
+#root .algo-modal-header { align-items: flex-start; display: flex; justify-content: space-between; margin-bottom: 18px; }
+#root .algo-modal-header h2 { font-size: 1.45rem; letter-spacing: -0.035em; margin: 3px 0 0; }
+#root .algo-close { align-items: center; background: var(--algo-fill); border: 0; border-radius: 50%; color: var(--algo-secondary); cursor: pointer; display: flex; font-size: 1.25rem; height: 34px; justify-content: center; width: 34px; }
+#root .algo-form-grid { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+#root .algo-form-grid label.wide, #root .algo-color-field.wide { grid-column: 1 / -1; }
+#root .algo-form-section-title { border-top: 1px solid var(--algo-border); display: grid; gap: 3px; margin-top: 5px; padding-top: 15px; }
+#root .algo-form-section-title strong { color: var(--algo-text); font-size: 0.82rem; }
+#root .algo-form-section-title span { color: var(--algo-secondary); font-size: 0.66rem; }
+#root .algo-check-field { align-items: center; background: var(--algo-fill); border: 1px solid var(--algo-border); border-radius: 12px; display: flex !important; gap: 9px !important; min-height: 42px; padding: 9px 11px; }
+#root .algo-check-field input { accent-color: var(--algo-blue); min-height: 18px; width: 18px; }
+#root .algo-check-field > span { color: var(--algo-text) !important; font-size: 0.74rem !important; letter-spacing: 0 !important; }
+#root .algo-form-grid textarea { resize: vertical; }
+#root .algo-form-grid input:disabled { background: #ededf0; color: #8e8e93; }
+#root .algo-color-field { border: 0; display: flex; gap: 8px; margin: 0; padding: 0; }
+#root .algo-color-field legend { color: var(--algo-secondary); font-size: 0.66rem; font-weight: 700; margin-bottom: 7px; }
+#root .algo-color-field button { border: 3px solid #fff; border-radius: 50%; box-shadow: 0 0 0 1px var(--algo-border); cursor: pointer; height: 27px; width: 27px; }
+#root .algo-color-field button.selected { box-shadow: 0 0 0 2px var(--algo-blue); }
+#root .algo-modal-actions { align-items: center; border-top: 1px solid var(--algo-border); display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; padding-top: 14px; }
+
+@media (max-width: 1320px) {
+  #root .algo-metrics-grid.global { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  #root .algo-filter-bar.operations { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  #root .algo-mapping-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+@media (max-width: 1050px) {
+  #root .algo-metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #root .algo-robot-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #root .algo-chart-grid { grid-template-columns: minmax(0, 1fr); }
+  #root .algo-analysis-grid, #root .algo-distribution-grid { grid-template-columns: minmax(0, 1fr); }
+  #root .algo-settings-facts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 760px) {
+  #root .algorithms-module { gap: 10px; padding-bottom: 90px; }
+  #root .algo-page-header, #root .algo-detail-header, #root .algo-panel, #root .algo-robots-section { border-radius: 18px; }
+  #root .algo-page-header { align-items: flex-start; display: grid; padding: 18px; }
+  #root .algo-page-header .algo-button.primary { width: 100%; }
+  #root .algo-panel, #root .algo-robots-section { padding: 14px; }
+  #root .algo-panel-heading, #root .algo-section-heading, #root .algo-card-heading { align-items: stretch; flex-direction: column; gap: 10px; }
+  #root .algo-header-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); justify-content: stretch; width: 100%; }
+  #root .algo-header-actions .algo-button { width: 100%; }
+  #root .algo-filter-bar, #root .algo-filter-bar.compact, #root .algo-filter-bar.operations { grid-template-columns: minmax(0, 1fr); margin-top: 14px; }
+  #root .algo-metrics-grid, #root .algo-metrics-grid.global { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+  #root .algo-metric-card { align-items: flex-start; display: grid; gap: 8px; min-height: 105px; padding: 11px; }
+  #root .algo-metric-icon { height: 30px; width: 30px; }
+  #root .algo-metric-card strong { font-size: 0.92rem; white-space: normal; }
+  #root .algo-chart-card, #root .algo-calendar-card { border-radius: 15px; padding: 11px; }
+  #root .algo-chart { min-height: 200px; width: 700px; }
+  #root .algo-chart-wrap { overflow-x: auto; }
+  #root .algo-chart-legend { justify-content: flex-start; }
+  #root .algo-robot-grid { grid-template-columns: minmax(0, 1fr); }
+  #root .algo-detail-header { align-items: stretch; grid-template-columns: minmax(0, 1fr); padding: 16px; }
+  #root .algo-detail-title { align-items: flex-start; }
+  #root .algo-detail-title h1 { font-size: 1.25rem; }
+  #root .algo-back-button { justify-self: start; padding-left: 0; }
+  #root .algo-tabs { border-radius: 13px; position: sticky; top: 6px; z-index: 40; }
+  #root .algo-tabs button { min-height: 42px; padding: 0 12px; }
+  #root .algo-calendar-weekdays span { font-size: 0.5rem; padding: 5px 0; }
+  #root .algo-calendar-grid > button, #root .algo-calendar-grid > .blank { min-height: 58px; padding: 5px; }
+  #root .algo-calendar-grid > button small { display: none; }
+  #root .algo-calendar-grid > button span { font-size: 0.5rem; }
+  #root .algo-table-wrap { margin-inline: -2px; }
+  #root .algo-row-actions { position: sticky; right: 0; }
+  #root .algo-pagination { align-items: stretch; flex-direction: column; gap: 8px; }
+  #root .algo-pagination > div { justify-content: space-between; }
+  #root .algo-dropzone { min-height: 190px; padding: 20px 12px; }
+  #root .algo-import-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #root .algo-import-summary > div:first-child { grid-column: 1 / -1; }
+  #root .algo-import-controls, #root .algo-mapping-grid { grid-template-columns: minmax(0, 1fr); }
+  #root .algo-import-actions { align-items: stretch; flex-direction: column; gap: 10px; }
+  #root .algo-import-actions .algo-button { width: 100%; }
+  #root .algo-import-history article, #root .algo-version-list article { align-items: stretch; grid-template-columns: minmax(0, 1fr); }
+  #root .algo-code-layout { grid-template-columns: minmax(0, 1fr); }
+  #root .algo-code-files { border-bottom: 1px solid var(--algo-border); border-right: 0; flex-direction: row; overflow-x: auto; }
+  #root .algo-code-files > span, #root .algo-code-files > p { display: none; }
+  #root .algo-code-files > button { flex: 0 0 auto; min-width: 145px; }
+  #root .algo-code-toolbar { align-items: stretch; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  #root .algo-code-toolbar > strong, #root .algo-code-toolbar label { grid-column: 1 / -1; }
+  #root .algo-code-toolbar input { width: 100%; }
+  #root .algo-code-area, #root .algo-code-area textarea { min-height: 350px; }
+  #root .algo-code-area textarea { font-size: 11px; padding: 12px; }
+  #root .algo-code-area pre { padding: 12px 8px; }
+  #root .algo-document-grid, #root .algo-attachment-grid { grid-template-columns: minmax(0, 1fr); }
+  #root .algo-document-grid label.wide { grid-column: auto; }
+  #root .algo-analysis-hero { align-items: flex-start; flex-direction: column; }
+  #root .algo-settings-facts { grid-template-columns: minmax(0, 1fr); }
+  #root .algo-attachment-grid article { grid-template-columns: auto minmax(0, 1fr); }
+  #root .algo-attachment-grid a, #root .algo-attachment-grid button { justify-self: start; }
+  #root .algo-danger-zone { align-items: stretch; flex-direction: column; }
+  #root .algo-modal-overlay { align-items: flex-end; padding: 0; }
+  #root .algo-modal { border-radius: 22px 22px 0 0; max-height: 94dvh; padding: 17px; }
+  #root .algo-form-grid { grid-template-columns: minmax(0, 1fr); }
+  #root .algo-form-grid label.wide, #root .algo-color-field.wide { grid-column: auto; }
+  #root .algo-modal-actions { position: sticky; bottom: -17px; background: rgba(255, 255, 255, 0.95); margin-inline: -17px; padding: 12px 17px calc(12px + env(safe-area-inset-bottom)); }
+  #root .algo-modal-actions .algo-button { flex: 1; }
+}
+
+@media (max-width: 420px) {
+  #root .algo-metrics-grid, #root .algo-metrics-grid.global { grid-template-columns: minmax(0, 1fr); }
+  #root .algo-metric-card { align-items: center; display: flex; min-height: 88px; }
+  #root .algo-robot-stats { grid-template-columns: minmax(0, 1fr); }
+  #root .algo-header-actions { grid-template-columns: minmax(0, 1fr); }
+  #root .algo-calendar-grid > button, #root .algo-calendar-grid > .blank { min-height: 48px; }
+  #root .algo-calendar-grid > button span { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #root .algorithms-module *, #root .algorithms-module *::before, #root .algorithms-module *::after { animation-duration: 0.01ms !important; scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+}

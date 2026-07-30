@@ -110,9 +110,171 @@ export interface AppSettings {
   defaultCurrency?: 'EUR' | 'USD'
 }
 
+export type AlgorithmStatus = 'development' | 'backtesting' | 'demo' | 'live' | 'paused' | 'discarded' | 'archived' | 'testing' | 'active'
+export type AlgorithmEnvironment = 'backtest' | 'out_of_sample' | 'demo' | 'real'
+export type AlgorithmDirection = 'long' | 'short' | 'both'
+export type AlgorithmTradeStatus = 'open' | 'closed'
+
+export interface AlgorithmTrade {
+  id: string
+  robotId: string
+  importId?: string
+  externalId?: string
+  robotVersion?: string
+  environment: AlgorithmEnvironment
+  entryDate: string
+  exitDate?: string
+  symbol: string
+  side: TradeSide
+  status: AlgorithmTradeStatus
+  entryPrice?: number
+  exitPrice?: number
+  stopLoss?: number
+  takeProfit?: number
+  size?: number
+  lots?: number
+  commission?: number
+  swap?: number
+  slippage?: number
+  points?: number
+  contracts?: number
+  breakEven?: boolean
+  profit: number
+  profitPercent?: number
+  balance?: number
+  equity?: number
+  drawdown?: number
+  durationMinutes?: number
+  setup?: string
+  entryReason?: string
+  exitReason?: string
+  tags?: string[]
+  notes?: string
+  sourceRow?: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AlgorithmImportRecord {
+  id: string
+  robotId: string
+  fileName: string
+  importedAt: string
+  environment: AlgorithmEnvironment
+  robotVersion?: string
+  rowsRead: number
+  rowsImported: number
+  rowsSkipped: number
+  rowsInvalid: number
+  duplicates: number
+  mapping: Record<string, string>
+  tradeIds: string[]
+  warnings: string[]
+  replacedTrades?: AlgorithmTrade[]
+}
+
+export interface AlgorithmCodeVersion {
+  id: string
+  robotId: string
+  fileId: string
+  version: number
+  content: string
+  notes?: string
+  createdAt: string
+  label?: 'stable' | 'real'
+}
+
+export interface AlgorithmCodeFile {
+  id: string
+  robotId: string
+  name: string
+  language: 'python' | 'text'
+  content: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AlgorithmAttachment {
+  id: string
+  robotId: string
+  name: string
+  type: string
+  size: number
+  description?: string
+  dataUrl: string
+  createdAt: string
+}
+
+export interface AlgorithmDocumentation {
+  summary: string
+  marketContext: string
+  entryRules: string
+  exitRules: string
+  riskManagement: string
+  filters: string
+  parameters: string
+  indicators: string
+  examples: string
+  assumptions: string
+  knownRisks: string
+  recommendedConditions: string
+  personalNotes: string
+  changelog: string
+  updatedAt?: string
+}
+
+export interface AlgorithmRobot {
+  id: string
+  name: string
+  description: string
+  version: string
+  status: AlgorithmStatus
+  environment: AlgorithmEnvironment
+  market: string
+  symbols: string[]
+  timeframe: string
+  direction: AlgorithmDirection
+  initialCapital: number
+  currency: 'EUR' | 'USD'
+  riskMode: 'fixed' | 'percent' | 'unknown'
+  riskValue?: number
+  tags: string[]
+  color: string
+  strategyType?: string
+  platform?: string
+  broker?: string
+  programmingLanguage?: string
+  pythonVersion?: string
+  libraries?: string[]
+  timezone?: string
+  tradingHours?: string
+  maxDailyTrades?: number
+  stopLossModel?: string
+  takeProfitModel?: string
+  trailingStop?: boolean
+  breakEven?: boolean
+  dailyLossLimit?: number
+  maxDrawdownLimit?: number
+  positionSizing?: string
+  estimatedCommission?: number
+  estimatedSlippage?: number
+  startDate?: string
+  endDate?: string
+  createdAt: string
+  updatedAt: string
+  archivedAt?: string
+  trades: AlgorithmTrade[]
+  imports: AlgorithmImportRecord[]
+  codeFiles: AlgorithmCodeFile[]
+  codeVersions: AlgorithmCodeVersion[]
+  attachments: AlgorithmAttachment[]
+  documentation: AlgorithmDocumentation
+}
+
 export interface AppData {
   strategies: Strategy[]
   accounts: FundingAccount[]
   operations: Operation[]
+  algorithms: AlgorithmRobot[]
   settings: AppSettings
 }
