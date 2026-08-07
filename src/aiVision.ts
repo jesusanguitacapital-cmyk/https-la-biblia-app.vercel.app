@@ -150,28 +150,77 @@ const normalizeDateTime = (value: unknown): string | undefined => {
   if (typeof value !== 'string') return undefined
   const input = value.trim()
   if (!input) return undefined
-  const isoDateOnly = input.match(/^(\d{4})-(\d{2})-(\d{2})$/)
-  if (isoDateOnly) {
-    return `${isoDateOnly[1]}-${isoDateOnly[2]}-${isoDateOnly[3]}T00:00`
+
+  const buildLocalDateTime = (
+    yearValue: string | number,
+    monthValue: string | number,
+    dayValue: string | number,
+    hourValue: string | number = 0,
+    minuteValue: string | number = 0,
+  ) => {
+    const year = Number(yearValue)
+    const month = Number(monthValue)
+    const day = Number(dayValue)
+    const hour = Number(hourValue)
+    const minute = Number(minuteValue)
+    if (
+      !Number.isInteger(year)
+      || !Number.isInteger(month)
+      || !Number.isInteger(day)
+      || !Number.isInteger(hour)
+      || !Number.isInteger(minute)
+      || year < 1900
+      || year > 2200
+      || month < 1
+      || month > 12
+      || day < 1
+      || day > 31
+      || hour < 0
+      || hour > 23
+      || minute < 0
+      || minute > 59
+    ) return undefined
+
+    const candidate = new Date(year, month - 1, day, hour, minute)
+    if (
+      candidate.getFullYear() !== year
+      || candidate.getMonth() !== month - 1
+      || candidate.getDate() !== day
+      || candidate.getHours() !== hour
+      || candidate.getMinutes() !== minute
+    ) return undefined
+
+    return [
+      year,
+      String(month).padStart(2, '0'),
+      String(day).padStart(2, '0'),
+    ].join('-') + 'T' + [
+      String(hour).padStart(2, '0'),
+      String(minute).padStart(2, '0'),
+    ].join(':')
   }
-  const iso = input.match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/)
-  if (iso) {
-    return `${iso[1]}-${iso[2]}-${iso[3]}T${iso[4]}:${iso[5]}`
-  }
-  const european = input.match(/^(\d{2})[./-](\d{2})[./-](\d{4})[ T](\d{2}):(\d{2})(?::\d{2})?$/)
+
+  const iso = input.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:[T ](\d{1,2}):(\d{2}))?/)
+  if (iso) return buildLocalDateTime(iso[1], iso[2], iso[3], iso[4] ?? 0, iso[5] ?? 0)
+
+  const european = input.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{2}|\d{4})(?:[ T](\d{1,2}):(\d{2})(?::\d{2})?)?$/)
   if (european) {
-    const [, dd, mm, yyyy, hh, min] = european
-    return `${yyyy}-${mm}-${dd}T${hh}:${min}`
+    const [, day, month, rawYear, hour = '0', minute = '0'] = european
+    const year = rawYear.length === 2
+      ? Number(rawYear) >= 70 ? `19${rawYear}` : `20${rawYear}`
+      : rawYear
+    return buildLocalDateTime(year, month, day, hour, minute)
   }
-  const europeanShortYear = input.match(/^(\d{2})[./-](\d{2})[./-](\d{2})[ T](\d{2}):(\d{2})(?::\d{2})?$/)
-  if (europeanShortYear) {
-    const [, dd, mm, yy, hh, min] = europeanShortYear
-    const fullYear = Number(yy) >= 70 ? `19${yy}` : `20${yy}`
-    return `${fullYear}-${mm}-${dd}T${hh}:${min}`
-  }
+
   const parsed = new Date(input)
   if (Number.isNaN(parsed.getTime())) return undefined
-  return parsed.toISOString().slice(0, 16)
+  return buildLocalDateTime(
+    parsed.getFullYear(),
+    parsed.getMonth() + 1,
+    parsed.getDate(),
+    parsed.getHours(),
+    parsed.getMinutes(),
+  )
 }
 
 const parseMetaTraderText = (text: string) => {

@@ -64,6 +64,52 @@ const toLocalDateTimeInput = (date = new Date()) => {
   return localTime.toISOString().slice(0, 16)
 }
 
+const readFileAsDataUrl = (file: File) => new Promise<string>((resolve, reject) => {
+  const reader = new FileReader()
+  reader.onload = () => resolve(String(reader.result ?? ''))
+  reader.onerror = () => reject(new Error('No se pudo leer la imagen seleccionada.'))
+  reader.readAsDataURL(file)
+})
+
+const optimizeOperationImage = async (file: File) => {
+  const original = await readFileAsDataUrl(file)
+  if (!file.type.startsWith('image/')) throw new Error('Selecciona un archivo de imagen válido.')
+
+  const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const nextImage = new Image()
+    nextImage.onload = () => resolve(nextImage)
+    nextImage.onerror = () => reject(new Error('No se pudo preparar la imagen.'))
+    nextImage.src = original
+  })
+
+  const maxDimension = 1440
+  const scale = Math.min(1, maxDimension / Math.max(image.naturalWidth, image.naturalHeight))
+  const width = Math.max(1, Math.round(image.naturalWidth * scale))
+  const height = Math.max(1, Math.round(image.naturalHeight * scale))
+  const canvas = document.createElement('canvas')
+  canvas.width = width
+  canvas.height = height
+  const context = canvas.getContext('2d')
+  if (!context) return original
+  context.fillStyle = '#FFFFFF'
+  context.fillRect(0, 0, width, height)
+  context.drawImage(image, 0, 0, width, height)
+
+  for (const quality of [0.82, 0.68, 0.54]) {
+    const optimized = canvas.toDataURL('image/jpeg', quality)
+    if (optimized.length <= 900_000 || quality === 0.54) return optimized
+  }
+  return original
+}
+
+const getOperationImageSource = (value?: string | null) => {
+  const source = String(value ?? '').trim()
+  if (!source) return ''
+  if (['data:image/', 'blob:', 'http://', 'https://', 'file://'].some((prefix) => source.toLowerCase().startsWith(prefix))) return source
+  if (source.startsWith('/')) return `file://${source}`
+  return ''
+}
+
 const getInitialOperationState = (strategyId = DEFAULT_STRATEGY.id) => ({
   strategyId,
   date: toLocalDateTimeInput(),
@@ -338,6 +384,46 @@ const formatDate = (value: string) => {
   if (!dateKey) return 'Sin fecha'
   const [year, month, day] = dateKey.split('-')
   return [day, month, year].join('/')
+}
+
+const toDateTimeLocalValue = (value?: string | null) => {
+  const dateKey = getDateKey(value)
+  if (!dateKey) return ''
+  const timeMatch = String(value ?? '').match(/[T ](\d{1,2}):(\d{2})/)
+  const hour = String(timeMatch?.[1] ?? '00').padStart(2, '0')
+  const minute = timeMatch?.[2] ?? '00'
+  return `${dateKey}T${hour}:${minute}`
+}
+
+const formatOperationDateTime = (value?: string | null) => {
+  const normalized = toDateTimeLocalValue(value)
+  if (!normalized) return 'Sin fecha'
+  const [date, time] = normalized.split('T')
+  return `${formatDate(date)} · ${time}`
+}
+
+const formatOptionalMetric = (value: unknown, suffix = '') => {
+  if (value == null || value === '') return '—'
+  const numericValue = Number(value)
+  if (!Number.isFinite(numericValue)) return String(value)
+  return `${formatNumber(numericValue)}${suffix}`
+}
+
+const operationResultLabel = (result: ResultType) => {
+  if (result === 'win') return 'Ganancia'
+  if (result === 'loss') return 'Pérdida'
+  return 'Break even'
+}
+
+const operationEmotionLabel = (value?: string) => {
+  const labels: Record<string, string> = {
+    Neutral: 'Neutral',
+    Calm: 'Calma',
+    Nervous: 'Nervios',
+    Overconfident: 'Exceso de confianza',
+    Distracted: 'Distracción',
+  }
+  return value ? labels[value] ?? value : '—'
 }
 
 const buildStrategyAiAnalysis = (operations: Operation[]) => {
@@ -848,6 +934,8 @@ function App() {
   const [editingAccountId, setEditingAccountId] = useState<string | null>(null)
   const [openStrategyMenuId, setOpenStrategyMenuId] = useState<string | null>(null)
   const [openOperationMenuId, setOpenOperationMenuId] = useState<string | null>(null)
+  const [viewingOperationId, setViewingOperationId] = useState<string | null>(null)
+  const operationImageModeRef = useRef<'ai' | 'library'>('ai')
   const [openAccountMenuId, setOpenAccountMenuId] = useState<string | null>(null)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [selectedModule, setSelectedModule] = useState<'strategies' | 'accounts' | 'algorithms'>('strategies')
@@ -927,6 +1015,19 @@ function App() {
     }
     return
   }, [isModalOpen])
+
+  useEffect(() => {
+    if (!viewingOperationId) return
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setViewingOperationId(null)
+    }
+    document.body.style.overflow = 'hidden'
+    window.addEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = ''
+      window.removeEventListener('keydown', onKey)
+    }
+  }, [viewingOperationId])
 
   useEffect(() => {
     if (isAccountModalOpen) {
@@ -1103,6 +1204,13 @@ function App() {
   const visibleStrategyIds = new Set(visibleStrategies.map((s) => s.id))
   const visibleOperations = data.operations.filter((op) => visibleStrategyIds.has(op.strategyId))
   const selectedStrategy = useMemo(() => (selectedStrategyId ? data.strategies.find((strategy) => strategy.id === selectedStrategyId) ?? null : null), [data.strategies, selectedStrategyId])
+  const viewedOperation = useMemo(() => (
+    viewingOperationId ? data.operations.find((operation) => operation.id === viewingOperationId) ?? null : null
+  ), [data.operations, viewingOperationId])
+  const viewedOperationImage = useMemo(
+    () => getOperationImageSource(viewedOperation?.screenshotPath),
+    [viewedOperation?.screenshotPath],
+  )
   const scopedOperations = useMemo(
     () => (selectedStrategyId ? data.operations.filter((operation) => operation.strategyId === selectedStrategyId) : visibleOperations),
     [data.operations, selectedStrategyId, visibleOperations],
@@ -1281,12 +1389,12 @@ function App() {
 
   const openEditOperationModal = (operation: Operation) => {
     closeFloatingMenus()
-    const preview = operation.screenshotPath?.startsWith('file://') ? operation.screenshotPath : null
+    const preview = getOperationImageSource(operation.screenshotPath) || null
     setOperationForm({
       ...getInitialOperationState(operation.strategyId),
       strategyId: operation.strategyId,
-      date: operation.date,
-      exitDate: operation.exitDate || operation.date,
+      date: toDateTimeLocalValue(operation.date),
+      exitDate: toDateTimeLocalValue(operation.exitDate || operation.date),
       asset: operation.asset,
       side: operation.side,
       entry: String(operation.entry),
@@ -1887,8 +1995,14 @@ function App() {
     const entry = Number(operationForm.entry)
     const exit = Number(operationForm.exit)
     const size = Number(operationForm.size)
-    if (!operationForm.date || !operationForm.exitDate) {
-      setMessage('Introduce la fecha y la hora de entrada y salida.')
+    const entryDateTime = toDateTimeLocalValue(operationForm.date)
+    const exitDateTime = toDateTimeLocalValue(operationForm.exitDate)
+    if (!entryDateTime || !exitDateTime) {
+      setMessage('Revisa el día, mes, año y hora de entrada y salida.')
+      return
+    }
+    if (new Date(exitDateTime).getTime() < new Date(entryDateTime).getTime()) {
+      setMessage('La salida no puede ser anterior a la entrada.')
       return
     }
     if (!Number.isFinite(entry) || !Number.isFinite(exit) || !Number.isFinite(size) || entry <= 0 || exit <= 0 || size <= 0) {
@@ -1919,8 +2033,8 @@ function App() {
     const operation: Operation = {
       id: editingOperationId ?? createId(),
       strategyId: operationForm.strategyId,
-      date: operationForm.date,
-      exitDate: operationForm.exitDate || operationForm.date,
+      date: entryDateTime,
+      exitDate: exitDateTime,
       asset: resolvedAsset,
       side: operationForm.side,
       entry,
@@ -1983,6 +2097,7 @@ function App() {
       ...dataRef.current,
       operations: dataRef.current.operations.filter((item) => item.id !== operation.id),
     })
+    if (viewingOperationId === operation.id) setViewingOperationId(null)
     setMessage('Operación eliminada correctamente.')
   }
 
@@ -1996,6 +2111,8 @@ function App() {
     setAiStatus('Analizando operación...')
     setPendingExtraction(null)
     setPendingScreenshotPath(screenshotPath)
+    setPreviewImage(preview)
+    setOperationForm((previous: any) => ({ ...previous, screenshotPath }))
     try {
       const extraction = await extractOperationFromImage(input)
       if (runId !== extractionRunRef.current) return
@@ -2018,22 +2135,36 @@ function App() {
     }
   }
 
-  const openScreenshotPicker = async () => {
+  const attachOperationImage = (preview: string, screenshotPath: string) => {
+    setPreviewImage(preview)
+    setPendingScreenshotPath(screenshotPath)
+    setOperationForm((previous: any) => ({ ...previous, screenshotPath }))
+  }
+
+  const openScreenshotPicker = async (mode: 'ai' | 'library' = 'ai') => {
+    operationImageModeRef.current = mode
     if (isElectron) {
       const path = await window.tradingApp.selectImage()
       if (!path) {
         setMessage('No se seleccionó ninguna imagen.')
         return
       }
-      if (!window.confirm('La captura se enviará al modelo de visión configurado para extraer la operación. ¿Deseas continuar?')) {
+      if (mode === 'ai' && !window.confirm('La captura se enviará al modelo de visión configurado para extraer la operación. ¿Deseas continuar?')) {
         return
       }
       try {
         const saved = await window.tradingApp.copyImage({ imagePath: path, folder: data.settings.dataFolder })
-        await analyzeSelectedImage(saved.path, `file://${saved.path}`, saved.path)
+        const preview = `file://${saved.path}`
+        if (mode === 'library') {
+          attachOperationImage(preview, saved.path)
+          setAiStatus('')
+          setMessage('Imagen guardada en la fototeca de la operación.')
+        } else {
+          await analyzeSelectedImage(saved.path, preview, saved.path)
+        }
       } catch (error) {
-        const message = error instanceof Error ? error.message : 'No se pudo analizar la captura con IA.'
-        setAiStatus('Error en la extracción')
+        const message = error instanceof Error ? error.message : 'No se pudo preparar la captura.'
+        setAiStatus(mode === 'ai' ? 'Error en la extracción' : '')
         setMessage(message)
       }
       return
@@ -2045,9 +2176,21 @@ function App() {
   const handleFileInputChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
-    const url = URL.createObjectURL(file)
-    await analyzeSelectedImage(file, url, file.name)
-    event.target.value = ''
+    try {
+      const storedImage = await optimizeOperationImage(file)
+      if (operationImageModeRef.current === 'library') {
+        attachOperationImage(storedImage, storedImage)
+        setAiStatus('')
+        setMessage('Imagen guardada dentro de la operación.')
+      } else {
+        await analyzeSelectedImage(file, storedImage, storedImage)
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'No se pudo preparar la imagen.'
+      setMessage(message)
+    } finally {
+      event.target.value = ''
+    }
   }
 
   const operationProfit = useMemo(() => {
@@ -2102,21 +2245,24 @@ function App() {
         .sort((a, b) => getDateKey(b.date).localeCompare(getDateKey(a.date)))
       : []
   ), [data.operations, selectedStrategyId])
-  const strategyOpsByDay = useMemo(() => {
-    const grouped = new Map<string, Operation[]>()
-    strategyOps.forEach((operation) => {
-      const dateKey = getDateKey(operation.date)
+  const strategyOperationEventsByDay = useMemo(() => {
+    const grouped = new Map<string, Array<{ operation: Operation; phase: 'entry' | 'exit' }>>()
+    const appendEvent = (dateKey: string, operation: Operation, phase: 'entry' | 'exit') => {
       if (!dateKey) return
-      const current = grouped.get(dateKey) ?? []
-      grouped.set(dateKey, [...current, operation])
+      grouped.set(dateKey, [...(grouped.get(dateKey) ?? []), { operation, phase }])
+    }
+
+    strategyOps.forEach((operation) => {
+      appendEvent(getDateKey(operation.date), operation, 'entry')
+      appendEvent(getDateKey(operation.exitDate), operation, 'exit')
     })
     return grouped
   }, [strategyOps])
-  const filteredStrategyOps = useMemo(() => (
-    calendarFocus
-      ? strategyOpsByDay.get(calendarFocus) ?? []
-      : strategyOps
-  ), [calendarFocus, strategyOps, strategyOpsByDay])
+  const filteredStrategyOps = useMemo(() => {
+    if (!calendarFocus) return strategyOps
+    const operationIds = new Set((strategyOperationEventsByDay.get(calendarFocus) ?? []).map((event) => event.operation.id))
+    return strategyOps.filter((operation) => operationIds.has(operation.id))
+  }, [calendarFocus, strategyOps, strategyOperationEventsByDay])
 
   const setCalendarMonthFromDateKey = (dateKey: string, focusDay = false) => {
     const normalizedDate = getDateKey(dateKey)
@@ -2129,7 +2275,7 @@ function App() {
   const openStrategyDetails = (strategyId: string) => {
     const latestDate = dataRef.current.operations
       .filter((operation) => operation.strategyId === strategyId)
-      .map((operation) => getDateKey(operation.date))
+      .flatMap((operation) => [getDateKey(operation.date), getDateKey(operation.exitDate)])
       .filter(Boolean)
       .sort((a, b) => b.localeCompare(a))[0]
 
@@ -2369,7 +2515,7 @@ function App() {
   const todayDateKey = getDateKey(toLocalDateTimeInput())
   const visibleCalendarLeadingBlanks = (new Date(visibleCalendarYear, visibleCalendarMonth, 1).getDay() + 6) % 7
   const visibleMonthPrefix = `${visibleCalendarYear}-${String(visibleCalendarMonth + 1).padStart(2, '0')}`
-  const visibleMonthStrategyOps = strategyOps.filter((operation) => getDateKey(operation.date).startsWith(visibleMonthPrefix))
+  const visibleMonthStrategyOps = strategyOps.filter((operation) => [getDateKey(operation.date), getDateKey(operation.exitDate)].some((dateKey) => dateKey.startsWith(visibleMonthPrefix)))
   const visibleMonthStrategyProfit = visibleMonthStrategyOps.reduce((sum, operation) => sum + computeProfit(operation), 0)
   const changeCalendarMonth = (offset: number) => {
     setCalendarFocus(null)
@@ -2638,9 +2784,12 @@ function App() {
                       {Array.from({ length: visibleCalendarDays }).map((_, i) => {
                         const day = i + 1
                         const dayStr = `${visibleCalendarYear}-${String(visibleCalendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-                        const dayOps = strategyOpsByDay.get(dayStr) ?? []
-                        const dayProfit = dayOps.reduce((sum, op) => sum + computeProfit(op), 0)
-                        const cls = dayOps.length ? (dayProfit > 0 ? 'positive' : dayProfit < 0 ? 'negative' : '') : ''
+                        const dayEvents = strategyOperationEventsByDay.get(dayStr) ?? []
+                        const entryEvents = dayEvents.filter((event) => event.phase === 'entry')
+                        const exitEvents = dayEvents.filter((event) => event.phase === 'exit')
+                        const dayOperationIds = new Set(dayEvents.map((event) => event.operation.id))
+                        const dayProfit = exitEvents.reduce((sum, event) => sum + computeProfit(event.operation), 0)
+                        const cls = exitEvents.length ? (dayProfit > 0 ? 'positive' : dayProfit < 0 ? 'negative' : 'neutral') : entryEvents.length ? 'entry' : ''
                         return (
                           <button
                             key={day}
@@ -2648,13 +2797,21 @@ function App() {
                             className={`strategy-calendar-day ${cls} ${calendarFocus === dayStr ? 'selected' : ''} ${todayDateKey === dayStr ? 'today' : ''}`}
                             onClick={() => setCalendarFocus((current) => current === dayStr ? null : dayStr)}
                             aria-pressed={calendarFocus === dayStr}
-                            aria-label={`${dayOps.length ? `${dayOps.length} operaciones` : 'Sin operaciones'} el ${formatDate(dayStr)}`}
+                            aria-label={`${dayOperationIds.size ? `${dayOperationIds.size} operaciones` : 'Sin operaciones'} el ${formatDate(dayStr)}`}
                           >
                             <div className="strategy-calendar-day-number">{day}</div>
-                            {dayOps.length > 0 ? (
-                              <div className={`strategy-calendar-day-summary ${cls || 'neutral'}`}>
-                                <span className="strategy-calendar-day-profit">{formatCurrency(dayProfit)}</span>
-                                <span className="strategy-calendar-day-count"><b>{dayOps.length}</b><span> {dayOps.length === 1 ? 'op' : 'ops'}</span></span>
+                            {dayEvents.length > 0 ? (
+                              <div className="strategy-calendar-operation-events">
+                                {entryEvents.length > 0 ? (
+                                  <span className="strategy-calendar-operation-event entry">
+                                    Entrada{entryEvents.length > 1 ? ` · ${entryEvents.length}` : ''}
+                                  </span>
+                                ) : null}
+                                {exitEvents.length > 0 ? (
+                                  <span className={`strategy-calendar-operation-event exit ${cls}`}>
+                                    Salida · {formatCurrency(dayProfit)}{exitEvents.length > 1 ? ` · ${exitEvents.length}` : ''}
+                                  </span>
+                                ) : null}
                               </div>
                             ) : null}
                           </button>
@@ -2673,11 +2830,27 @@ function App() {
                       </div>
                       <div className="strategy-history-list">
                         {filteredStrategyOps.length === 0 ? <div className="strategy-empty-state">{calendarFocus ? 'No hay operaciones en la fecha seleccionada' : 'No hay operaciones'}</div> : filteredStrategyOps.map((op) => (
-                          <div key={op.id} className="strategy-history-card">
+                          <div
+                            key={op.id}
+                            className={`strategy-history-card strategy-history-card-openable${op.screenshotPath ? ' has-image' : ''}`}
+                            role="button"
+                            tabIndex={0}
+                            aria-label={`Abrir detalles de ${op.side === 'long' ? 'compra' : 'venta'} en ${op.asset}`}
+                            onClick={() => setViewingOperationId(op.id)}
+                            onKeyDown={(event) => {
+                              if (event.key === 'Enter' || event.key === ' ') {
+                                event.preventDefault()
+                                setViewingOperationId(op.id)
+                              }
+                            }}
+                          >
                             <div className="strategy-history-meta">
-                              <strong>{op.side === 'long' ? 'Compra' : 'Venta'}</strong>
-                              <div>{new Date(op.date).toLocaleString('es-ES')}</div>
-                              <div className="strategy-history-ratio">R/R: {op.rrRatio ?? '—'}</div>
+                              <strong>{op.side === 'long' ? 'Compra' : 'Venta'} · {op.asset}</strong>
+                              <div className="strategy-history-dates">
+                                <span><b>Entrada</b>{formatOperationDateTime(op.date)}</span>
+                                <span><b>Salida</b>{formatOperationDateTime(op.exitDate)}</span>
+                              </div>
+                              <div className="strategy-history-open-hint">Pulsar para ver todos los datos{op.screenshotPath ? ' · Con imagen' : ''}</div>
                             </div>
                             <div className="strategy-history-side">
                               <div className={`strategy-history-profit ${op.result === 'win' ? 'positive' : op.result === 'loss' ? 'negative' : 'neutral'}`}>{formatCurrency(computeProfit(op))}</div>
@@ -2685,7 +2858,8 @@ function App() {
                                 <button
                                   type="button"
                                   className="strategy-menu-button operation-menu-button"
-                                  aria-label={`Opciones de operación del ${new Date(op.date).toLocaleDateString('es-ES')}`}
+                                  aria-label={`Opciones de operación del ${formatDate(op.date)}`}
+                                  aria-expanded={openOperationMenuId === op.id}
                                   onClick={() => setOpenOperationMenuId((current) => current === op.id ? null : op.id)}
                                 >
                                   <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -2696,8 +2870,11 @@ function App() {
                                 </button>
                                 {openOperationMenuId === op.id ? (
                                   <div className="strategy-menu operation-menu" onClick={(event) => event.stopPropagation()}>
+                                    <button type="button" className="strategy-menu-item" onClick={() => { setViewingOperationId(op.id); setOpenOperationMenuId(null) }}>
+                                      Ver detalles
+                                    </button>
                                     <button type="button" className="strategy-menu-item" onClick={() => openEditOperationModal(op)}>
-                                      Ver / Editar
+                                      Editar
                                     </button>
                                     <button type="button" className="strategy-menu-item danger" onClick={() => void deleteOperation(op)}>
                                       Eliminar
@@ -3663,6 +3840,196 @@ function App() {
         </div>
       ) : null}
 
+
+      {viewedOperation ? (
+        <div
+          className="modal-overlay operation-detail-overlay"
+          role="presentation"
+          onClick={() => setViewingOperationId(null)}
+        >
+          <article
+            className="operation-detail-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="operation-detail-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <header className="operation-detail-header">
+              <div>
+                <span className="operation-detail-kicker">Operación registrada</span>
+                <h2 id="operation-detail-title">
+                  {viewedOperation.side === 'long' ? 'Compra' : 'Venta'} · {viewedOperation.asset || viewedOperation.instrument || 'Sin activo'}
+                </h2>
+                <p>
+                  Entrada {formatOperationDateTime(viewedOperation.date)}
+                  <span aria-hidden="true"> · </span>
+                  Salida {formatOperationDateTime(viewedOperation.exitDate)}
+                </p>
+              </div>
+              <button
+                type="button"
+                className="close-button operation-detail-close"
+                aria-label="Cerrar detalles"
+                onClick={() => setViewingOperationId(null)}
+              >
+                ×
+              </button>
+            </header>
+
+            <section className={`operation-detail-result ${viewedOperation.result}`}>
+              <div>
+                <span>Resultado</span>
+                <strong>{operationResultLabel(viewedOperation.result)}</strong>
+              </div>
+              <div>
+                <span>Ganancia / pérdida</span>
+                <strong>
+                  {formatNumber(computeProfit(viewedOperation))} {viewedOperation.benefitCurrency === 'USD' ? 'USD' : 'EUR'}
+                </strong>
+                <small>{viewedOperation.plPercent != null ? `${formatNumber(viewedOperation.plPercent)}%` : 'Porcentaje no registrado'}</small>
+              </div>
+            </section>
+
+            <section className="operation-detail-section">
+              <div className="operation-detail-section-title">
+                <span>Recorrido</span>
+                <strong>Entrada y salida</strong>
+              </div>
+              <div className="operation-detail-timeline">
+                <div className="operation-detail-timepoint entry">
+                  <span className="operation-detail-timepoint-dot" aria-hidden="true" />
+                  <div>
+                    <small>Entrada</small>
+                    <strong>{formatOperationDateTime(viewedOperation.date)}</strong>
+                    <span>Precio {formatOptionalMetric(viewedOperation.entry)}</span>
+                  </div>
+                </div>
+                <div className="operation-detail-timepoint exit">
+                  <span className="operation-detail-timepoint-dot" aria-hidden="true" />
+                  <div>
+                    <small>Salida</small>
+                    <strong>{formatOperationDateTime(viewedOperation.exitDate)}</strong>
+                    <span>Precio {formatOptionalMetric(viewedOperation.exit)}</span>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section className="operation-detail-section">
+              <div className="operation-detail-section-title">
+                <span>Datos técnicos</span>
+                <strong>Configuración de la operación</strong>
+              </div>
+              <div className="operation-detail-grid">
+                {[
+                  ['Dirección', viewedOperation.side === 'long' ? 'Compra (Long)' : 'Venta (Short)'],
+                  ['Tamaño', formatOptionalMetric(viewedOperation.size)],
+                  ['Lotes', formatOptionalMetric(viewedOperation.lots)],
+                  ['Contratos', formatOptionalMetric(viewedOperation.contracts)],
+                  ['Stop loss', formatOptionalMetric(viewedOperation.stopLoss)],
+                  ['Take profit', formatOptionalMetric(viewedOperation.takeProfit)],
+                  ['Ratio R/R', viewedOperation.rrRatio || '—'],
+                  ['Tipo de entrada', viewedOperation.entryType || '—'],
+                  ['Setup', viewedOperation.setupType || '—'],
+                  ['Instrumento', viewedOperation.instrument || viewedOperation.asset || '—'],
+                  ['Puntos', formatOptionalMetric(viewedOperation.points)],
+                  ['Valor por punto', formatOptionalMetric(viewedOperation.valuePerPoint)],
+                ].map(([label, value]) => (
+                  <div key={label} className="operation-detail-stat">
+                    <span>{label}</span>
+                    <strong>{value}</strong>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section className="operation-detail-section">
+              <div className="operation-detail-section-title">
+                <span>Riesgo y contexto</span>
+                <strong>Gestión y disciplina</strong>
+              </div>
+              <div className="operation-detail-grid">
+                {[
+                  ['Comisión', formatOptionalMetric(viewedOperation.commission)],
+                  ['Swap', formatOptionalMetric(viewedOperation.swap)],
+                  ['Riesgo monetario', formatOptionalMetric(viewedOperation.riskMoney)],
+                  ['Riesgo', formatOptionalMetric(viewedOperation.riskPercent, '%')],
+                  ['Beneficio previsto', formatOptionalMetric(viewedOperation.benefitMoney)],
+                  ['Beneficio previsto', formatOptionalMetric(viewedOperation.benefitPercent, '%')],
+                  ['Balance anterior', formatOptionalMetric(viewedOperation.balanceBefore)],
+                  ['Balance posterior', formatOptionalMetric(viewedOperation.balanceAfter)],
+                  ['Equity', formatOptionalMetric(viewedOperation.equity)],
+                  ['Drawdown', formatOptionalMetric(viewedOperation.drawdownProduced, '%')],
+                  ['Broker', viewedOperation.broker || '—'],
+                  ['Cuenta', viewedOperation.account || '—'],
+                  ['Estado emocional', operationEmotionLabel(viewedOperation.emotionalState)],
+                  ['Plan respetado', viewedOperation.followedPlan == null ? '—' : viewedOperation.followedPlan ? 'Sí' : 'No'],
+                  ['Break even', viewedOperation.breakEven == null ? '—' : viewedOperation.breakEven ? 'Sí' : 'No'],
+                ].map(([label, value], index) => (
+                  <div key={`${label}-${index}`} className="operation-detail-stat">
+                    <span>{label}</span>
+                    <strong>{value}</strong>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {viewedOperation.labels?.length ? (
+              <section className="operation-detail-section operation-detail-labels">
+                <div className="operation-detail-section-title">
+                  <span>Etiquetas</span>
+                  <strong>Clasificación</strong>
+                </div>
+                <div>
+                  {viewedOperation.labels.map((label) => <span key={label}>{label}</span>)}
+                </div>
+              </section>
+            ) : null}
+
+            {viewedOperation.notes ? (
+              <section className="operation-detail-section operation-detail-notes">
+                <div className="operation-detail-section-title">
+                  <span>Notas</span>
+                  <strong>Observaciones personales</strong>
+                </div>
+                <p>{viewedOperation.notes}</p>
+              </section>
+            ) : null}
+
+            {viewedOperationImage ? (
+              <section className="operation-detail-section operation-detail-image">
+                <div className="operation-detail-section-title">
+                  <span>Fototeca</span>
+                  <strong>Captura guardada</strong>
+                </div>
+                <img src={viewedOperationImage} alt={`Captura de la operación en ${viewedOperation.asset || 'el mercado'}`} />
+              </section>
+            ) : viewedOperation.screenshotPath ? (
+              <section className="operation-detail-section operation-detail-image-note">
+                La referencia de la captura antigua existe, pero ese archivo solo está disponible en el ordenador donde se añadió.
+              </section>
+            ) : null}
+
+            <footer className="operation-detail-footer">
+              <button type="button" className="button-secondary" onClick={() => setViewingOperationId(null)}>
+                Cerrar
+              </button>
+              <button
+                type="button"
+                className="button-primary"
+                onClick={() => {
+                  const operation = viewedOperation
+                  setViewingOperationId(null)
+                  openEditOperationModal(operation)
+                }}
+              >
+                Editar operación
+              </button>
+            </footer>
+          </article>
+        </div>
+      ) : null}
+
       {isModalOpen ? (
         <div className="modal-overlay" role="dialog" aria-modal="true">
           <div className="modal-panel operation-modal-panel" data-ai-status={aiStatus} data-has-preview={previewImage ? 'true' : 'false'}>
@@ -3690,7 +4057,7 @@ function App() {
                   <p>Sube una captura de MetaTrader y la IA rellenará los campos automáticamente</p>
                 </div>
                 <div className="operation-upload-grid">
-                  <button type="button" className="operation-upload-card" onClick={openScreenshotPicker} disabled={isAiAnalyzing}>
+                  <button type="button" className="operation-upload-card" onClick={() => void openScreenshotPicker('ai')} disabled={isAiAnalyzing}>
                     <span className="operation-upload-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M12 16V4" />
@@ -3700,7 +4067,7 @@ function App() {
                     </span>
                     <span>Subir captura</span>
                   </button>
-                  <button type="button" className="operation-upload-card" onClick={openScreenshotPicker} disabled={isAiAnalyzing}>
+                  <button type="button" className="operation-upload-card" onClick={() => void openScreenshotPicker('ai')} disabled={isAiAnalyzing}>
                     <span className="operation-upload-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M4 7h3l2-3h6l2 3h3v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" />
@@ -3892,7 +4259,7 @@ function App() {
                   <p>Guarda una captura del gráfico para revisarla tú manualmente más tarde</p>
                 </div>
                 <div className="operation-upload-grid operation-upload-grid-photo">
-                  <button type="button" className="operation-photo-card" onClick={openScreenshotPicker} disabled={isAiAnalyzing}>
+                  <button type="button" className="operation-photo-card" onClick={() => void openScreenshotPicker('library')} disabled={isAiAnalyzing}>
                     <span className="operation-upload-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <rect x="3" y="3" width="18" height="18" rx="2" />
@@ -3902,7 +4269,7 @@ function App() {
                     </span>
                     <span>Subir imagen</span>
                   </button>
-                  <button type="button" className="operation-photo-card" onClick={openScreenshotPicker} disabled={isAiAnalyzing}>
+                  <button type="button" className="operation-photo-card" onClick={() => void openScreenshotPicker('library')} disabled={isAiAnalyzing}>
                     <span className="operation-upload-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <path d="M4 7h3l2-3h6l2 3h3v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z" />
@@ -3912,6 +4279,20 @@ function App() {
                     <span>Tomar foto</span>
                   </button>
                 </div>
+                {previewImage ? (
+                  <div className="operation-photo-preview">
+                    <img src={previewImage} alt="Captura guardada para esta operación" />
+                    <div>
+                      <strong>Imagen vinculada a la operación</strong>
+                      <span>Se mostrará al abrir esta operación desde el historial.</span>
+                      <button type="button" className="button-secondary" onClick={() => {
+                        setPreviewImage(null)
+                        setPendingScreenshotPath('')
+                        setOperationForm((previous: any) => ({ ...previous, screenshotPath: '' }))
+                      }}>Quitar imagen</button>
+                    </div>
+                  </div>
+                ) : null}
               </section>
 
               <label className="operation-field operation-notes-field">
