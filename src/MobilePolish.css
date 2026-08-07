@@ -126,13 +126,18 @@
     overflow-x: hidden !important;
   }
 
-  #root .app-shell.apple-theme {
+  #root .app-shell.apple-theme,
+  #root .app-shell.apple-theme.dark-theme,
+  #root .app-shell.apple-theme.light-theme {
     display: grid !important;
     grid-template-columns: minmax(0, 1fr) !important;
     width: 100% !important;
     min-width: 0 !important;
     min-height: 100dvh !important;
-    padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(18px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left)) !important;
+    padding-top: 8px !important;
+    padding-right: 8px !important;
+    padding-bottom: 18px !important;
+    padding-left: 8px !important;
     gap: 12px !important;
     overflow: clip !important;
   }
@@ -863,7 +868,9 @@
 }
 
 @media (max-width: 480px) {
-  #root .app-shell.apple-theme {
+  #root .app-shell.apple-theme,
+  #root .app-shell.apple-theme.dark-theme,
+  #root .app-shell.apple-theme.light-theme {
     padding-inline: 6px !important;
     gap: 9px !important;
   }
@@ -975,5 +982,403 @@
   #root .apple-theme .withdrawal-menu {
     min-width: min(230px, calc(100vw - 24px)) !important;
     max-width: calc(100vw - 24px) !important;
+  }
+}
+
+
+/* Strategy calendar, color picker and phone polish v2 */
+
+#root .apple-theme .strategy-color-picker {
+  display: grid !important;
+  gap: 14px !important;
+  margin-top: 4px !important;
+  padding: 16px !important;
+  color: #1d1d1f !important;
+  background: #f5f5f7 !important;
+  border: 1px solid #e5e5ea !important;
+  border-radius: 18px !important;
+}
+
+#root .apple-theme .strategy-color-heading {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 16px !important;
+}
+
+#root .apple-theme .strategy-color-heading > div {
+  display: grid !important;
+  gap: 4px !important;
+}
+
+#root .apple-theme .strategy-color-heading strong {
+  color: #1d1d1f !important;
+  font-size: 0.88rem !important;
+  font-weight: 700 !important;
+}
+
+#root .apple-theme .strategy-color-heading small {
+  color: #6e6e73 !important;
+  font-size: 0.72rem !important;
+  line-height: 1.35 !important;
+}
+
+#root .apple-theme .strategy-color-value {
+  display: inline-flex !important;
+  align-items: center !important;
+  flex: 0 0 auto !important;
+  gap: 8px !important;
+  min-height: 34px !important;
+  padding: 6px 10px !important;
+  color: #3a3a3c !important;
+  background: #ffffff !important;
+  border: 1px solid #d1d1d6 !important;
+  border-radius: 11px !important;
+  font-size: 0.7rem !important;
+  font-weight: 650 !important;
+  font-variant-numeric: tabular-nums !important;
+}
+
+#root .apple-theme .strategy-color-value > span {
+  width: 18px !important;
+  height: 18px !important;
+  flex: 0 0 18px !important;
+  background: var(--strategy-selected-color) !important;
+  border: 2px solid #ffffff !important;
+  border-radius: 999px !important;
+  box-shadow: 0 0 0 1px rgba(60, 60, 67, 0.2) !important;
+}
+
+#root .apple-theme .strategy-color-controls {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 14px !important;
+}
+
+#root .apple-theme .strategy-color-swatches {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 9px !important;
+}
+
+#root .apple-theme button.strategy-color-swatch {
+  display: inline-grid !important;
+  place-items: center !important;
+  width: 38px !important;
+  min-width: 38px !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: #ffffff !important;
+  background: var(--strategy-swatch-color) !important;
+  background-color: var(--strategy-swatch-color) !important;
+  background-image: none !important;
+  border: 3px solid #ffffff !important;
+  border-radius: 999px !important;
+  box-shadow: 0 0 0 1px rgba(60, 60, 67, 0.18), 0 3px 9px rgba(0, 0, 0, 0.08) !important;
+  font-size: 0.88rem !important;
+  font-weight: 850 !important;
+  cursor: pointer !important;
+  transition: transform 150ms ease, box-shadow 150ms ease !important;
+}
+
+#root .apple-theme button.strategy-color-swatch:hover {
+  transform: translateY(-2px) scale(1.04) !important;
+}
+
+#root .apple-theme button.strategy-color-swatch.selected {
+  box-shadow: 0 0 0 3px #ffffff, 0 0 0 5px var(--strategy-swatch-color), 0 6px 16px rgba(0, 0, 0, 0.12) !important;
+}
+
+#root .apple-theme .strategy-custom-color {
+  display: inline-flex !important;
+  align-items: center !important;
+  flex: 0 0 auto !important;
+  gap: 8px !important;
+  min-height: 42px !important;
+  margin: 0 !important;
+  padding: 5px 11px 5px 6px !important;
+  color: #3a3a3c !important;
+  background: #ffffff !important;
+  border: 1px solid #d1d1d6 !important;
+  border-radius: 12px !important;
+  font-size: 0.75rem !important;
+  font-weight: 650 !important;
+  cursor: pointer !important;
+}
+
+#root .apple-theme .strategy-custom-color input[type='color'] {
+  width: 32px !important;
+  min-width: 32px !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  margin: 0 !important;
+  padding: 2px !important;
+  background: #ffffff !important;
+  border: 1px solid #d1d1d6 !important;
+  border-radius: 9px !important;
+  cursor: pointer !important;
+}
+
+#root .apple-theme .strategy-calendar-heading {
+  display: grid !important;
+  min-width: 0 !important;
+  gap: 4px !important;
+}
+
+#root .apple-theme .strategy-calendar-heading > span {
+  color: #6e6e73 !important;
+  font-size: 0.72rem !important;
+  font-weight: 560 !important;
+}
+
+#root .apple-theme .strategy-calendar-card {
+  container-type: inline-size !important;
+}
+
+#root .apple-theme .strategy-calendar-grid {
+  table-layout: fixed !important;
+}
+
+#root .apple-theme .strategy-calendar-day,
+#root .apple-theme .strategy-calendar-blank {
+  height: auto !important;
+  min-height: clamp(82px, 6.1vw, 104px) !important;
+  aspect-ratio: auto !important;
+}
+
+#root .apple-theme .strategy-calendar-day-summary {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 5px !important;
+  overflow: hidden !important;
+}
+
+#root .apple-theme .strategy-calendar-day-profit {
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+#root .apple-theme .strategy-calendar-day-count {
+  display: inline-flex !important;
+  align-items: baseline !important;
+  white-space: nowrap !important;
+}
+
+#root .apple-theme .strategy-calendar-day-count b {
+  color: inherit !important;
+  font-size: inherit !important;
+}
+
+#root .apple-theme .strategy-history-title-row h3 {
+  color: #1d1d1f !important;
+  font-size: clamp(1rem, 1.5vw, 1.3rem) !important;
+}
+
+@media (max-width: 920px) {
+  #root .apple-theme .module-switcher {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  #root .apple-theme .strategy-page-title-row {
+    align-items: flex-start !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  #root .apple-theme .strategy-page-title-block {
+    min-width: 0 !important;
+  }
+
+  #root .apple-theme .strategy-page-meta {
+    align-items: flex-start !important;
+    flex-wrap: wrap !important;
+  }
+
+  #root .apple-theme .strategy-calendar-card {
+    padding: 12px !important;
+  }
+
+  #root .apple-theme .strategy-calendar-grid {
+    gap: 0 !important;
+    border-radius: 14px !important;
+  }
+
+  #root .apple-theme .strategy-calendar-weekday {
+    height: 30px !important;
+    padding: 0 2px !important;
+    font-size: 0.57rem !important;
+  }
+
+  #root .apple-theme .strategy-calendar-day,
+  #root .apple-theme .strategy-calendar-blank {
+    min-height: 62px !important;
+    padding: 4px 3px !important;
+    border-radius: 0 !important;
+  }
+
+  #root .apple-theme .strategy-calendar-day-number {
+    width: 22px !important;
+    height: 22px !important;
+    font-size: 0.68rem !important;
+  }
+
+  #root .apple-theme .strategy-calendar-day-summary {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    justify-items: start !important;
+    gap: 0 !important;
+    min-height: 23px !important;
+    padding: 2px 3px !important;
+    font-size: 0.47rem !important;
+    line-height: 1.05 !important;
+    border-radius: 5px !important;
+  }
+
+  #root .apple-theme .strategy-calendar-day-count {
+    font-size: 0.43rem !important;
+    opacity: 0.86 !important;
+  }
+
+  #root .apple-theme .modal-panel .row-two {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    width: 100% !important;
+    gap: 10px !important;
+  }
+
+  #root .apple-theme .strategy-color-controls {
+    align-items: stretch !important;
+    flex-direction: column !important;
+  }
+
+  #root .apple-theme .strategy-custom-color {
+    width: fit-content !important;
+  }
+}
+
+@media (max-width: 480px) {
+  #root .apple-theme .sidebar-quick-actions {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  #root .apple-theme .module-switcher {
+    gap: 3px !important;
+  }
+
+  #root .apple-theme .module-switcher .pill {
+    min-height: 44px !important;
+    padding: 5px 3px !important;
+    font-size: 0.51rem !important;
+  }
+
+  #root .apple-theme .strategy-calendar-header {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: start !important;
+    gap: 7px !important;
+  }
+
+  #root .apple-theme .strategy-calendar-header strong {
+    font-size: 0.98rem !important;
+  }
+
+  #root .apple-theme .strategy-calendar-heading > span {
+    font-size: 0.58rem !important;
+  }
+
+  #root .apple-theme .calendar-nav-actions {
+    width: auto !important;
+    gap: 3px !important;
+  }
+
+  #root .apple-theme .calendar-nav-button,
+  #root .apple-theme .calendar-today-button {
+    width: 34px !important;
+    min-width: 34px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    padding: 0 !important;
+    font-size: 0.72rem !important;
+  }
+
+  #root .apple-theme .calendar-today-button {
+    width: auto !important;
+    min-width: 44px !important;
+    padding-inline: 7px !important;
+  }
+
+  #root .apple-theme .strategy-calendar-card {
+    padding: 8px !important;
+  }
+
+  #root .apple-theme .strategy-calendar-tools-row {
+    margin-top: 10px !important;
+  }
+
+  #root .apple-theme .strategy-date-search-label {
+    font-size: 0.58rem !important;
+  }
+
+  #root .apple-theme .strategy-date-search input {
+    min-height: 40px !important;
+    font-size: 16px !important;
+  }
+
+  #root .apple-theme .strategy-calendar-weekday {
+    height: 26px !important;
+    font-size: 0.49rem !important;
+  }
+
+  #root .apple-theme .strategy-calendar-day,
+  #root .apple-theme .strategy-calendar-blank {
+    min-height: 52px !important;
+    padding: 3px 2px !important;
+  }
+
+  #root .apple-theme .strategy-calendar-day-number {
+    width: 20px !important;
+    height: 20px !important;
+    font-size: 0.62rem !important;
+  }
+
+  #root .apple-theme .strategy-calendar-day-summary {
+    min-height: 20px !important;
+    margin-top: 1px !important;
+    padding: 2px !important;
+    font-size: 0.42rem !important;
+  }
+
+  #root .apple-theme .strategy-calendar-day-count > span {
+    display: none !important;
+  }
+
+  #root .apple-theme .strategy-color-picker {
+    padding: 12px !important;
+  }
+
+  #root .apple-theme .strategy-color-heading {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+  }
+
+  #root .apple-theme .strategy-color-swatches {
+    display: grid !important;
+    grid-template-columns: repeat(6, 38px) !important;
+    width: 100% !important;
+    gap: 7px !important;
+    overflow-x: auto !important;
+    padding: 4px !important;
+  }
+
+  #root .apple-theme .strategy-custom-color {
+    width: 100% !important;
+    justify-content: flex-start !important;
   }
 }

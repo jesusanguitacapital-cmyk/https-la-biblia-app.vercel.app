@@ -20,7 +20,7 @@ const DEFAULT_STRATEGY: Strategy = {
   asset: '',
   timeframe: '1M',
   state: 'active',
-  color: '#7de3a0',
+  color: '#34C759',
   environment: 'real',
   createdAt: new Date().toISOString(),
 }
@@ -50,10 +50,24 @@ const APP_BACKGROUND_PRESETS = [
   { label: 'Verde niebla', value: '#EEF7F2' },
 ] as const
 
+const STRATEGY_COLOR_PRESETS = [
+  { label: 'Verde', value: '#34C759' },
+  { label: 'Azul', value: '#007AFF' },
+  { label: 'Indigo', value: '#5856D6' },
+  { label: 'Violeta', value: '#AF52DE' },
+  { label: 'Naranja', value: '#FF9500' },
+  { label: 'Rosa', value: '#FF2D55' },
+] as const
+
+const toLocalDateTimeInput = (date = new Date()) => {
+  const localTime = new Date(date.getTime() - date.getTimezoneOffset() * 60_000)
+  return localTime.toISOString().slice(0, 16)
+}
+
 const getInitialOperationState = (strategyId = DEFAULT_STRATEGY.id) => ({
   strategyId,
-  date: new Date().toISOString().slice(0, 16),
-  exitDate: new Date().toISOString().slice(0, 16),
+  date: toLocalDateTimeInput(),
+  exitDate: toLocalDateTimeInput(),
   asset: '',
   side: 'long' as TradeSide,
   entry: '0',
@@ -291,12 +305,40 @@ const AppleChartPoint = ({
   )
 }
 
-const formatDate = (value: string) => {
-  if (!value) return 'Sin fecha'
-  return new Date(value).toLocaleDateString('es-ES')
+const getDateKey = (value?: string | null) => {
+  const rawValue = String(value ?? '').trim()
+  if (!rawValue) return ''
+
+  const isoMatch = rawValue.match(/^(\d{4})[-/](\d{1,2})[-/](\d{1,2})/)
+  const localeMatch = rawValue.match(/^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})/)
+  const parts = isoMatch
+    ? { year: Number(isoMatch[1]), month: Number(isoMatch[2]), day: Number(isoMatch[3]) }
+    : localeMatch
+      ? { year: Number(localeMatch[3]), month: Number(localeMatch[2]), day: Number(localeMatch[1]) }
+      : null
+
+  if (parts) {
+    const candidate = new Date(parts.year, parts.month - 1, parts.day)
+    if (
+      candidate.getFullYear() === parts.year
+      && candidate.getMonth() === parts.month - 1
+      && candidate.getDate() === parts.day
+    ) {
+      return [parts.year, String(parts.month).padStart(2, '0'), String(parts.day).padStart(2, '0')].join('-')
+    }
+  }
+
+  const parsed = new Date(rawValue)
+  if (Number.isNaN(parsed.getTime())) return ''
+  return [parsed.getFullYear(), String(parsed.getMonth() + 1).padStart(2, '0'), String(parsed.getDate()).padStart(2, '0')].join('-')
 }
 
-const getDateKey = (value?: string | null) => (value ? value.slice(0, 10) : '')
+const formatDate = (value: string) => {
+  const dateKey = getDateKey(value)
+  if (!dateKey) return 'Sin fecha'
+  const [year, month, day] = dateKey.split('-')
+  return [day, month, year].join('/')
+}
 
 const buildStrategyAiAnalysis = (operations: Operation[]) => {
   const sortedOps = [...operations].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
@@ -817,7 +859,7 @@ function App() {
   const [newStrategyAsset, setNewStrategyAsset] = useState('')
   const [newStrategyTimeframe, setNewStrategyTimeframe] = useState('1m')
   const [newStrategyState, setNewStrategyState] = useState<'active'|'inactive'>('active')
-  const [newStrategyColor, setNewStrategyColor] = useState('#7de3a0')
+  const [newStrategyColor, setNewStrategyColor] = useState('#34C759')
   const [newStrategyImage, setNewStrategyImage] = useState<string | null>(null)
   const [newStrategyInitialBalance, setNewStrategyInitialBalance] = useState<number>(0)
   const [newStrategyBroker, setNewStrategyBroker] = useState('')
@@ -1196,7 +1238,7 @@ function App() {
     setNewStrategyAsset(strategy?.asset ?? '')
     setNewStrategyTimeframe(strategy?.timeframe ?? '1m')
     setNewStrategyState(strategy?.state ?? 'active')
-    setNewStrategyColor(strategy?.color ?? '#7de3a0')
+    setNewStrategyColor((strategy?.color ?? '#34C759').toUpperCase())
     setNewStrategyImage(strategy?.imagePath ?? null)
     setNewStrategyInitialBalance(strategy?.initialBalance ?? 0)
     setNewStrategyBroker(strategy?.broker ?? '')
@@ -1375,7 +1417,7 @@ function App() {
       asset: newStrategyAsset,
       timeframe: newStrategyTimeframe,
       state: newStrategyState,
-      color: newStrategyColor,
+      color: newStrategyColor.toUpperCase(),
       environment: 'real',
       imagePath: newStrategyImage ?? undefined,
       initialBalance: newStrategyInitialBalance,
@@ -1925,6 +1967,8 @@ function App() {
     }
 
     await saveData(nextData)
+    const savedDateKey = getDateKey(operation.date)
+    if (savedDateKey) setCalendarMonthFromDateKey(savedDateKey, true)
     resetOperationForm(operationForm.strategyId)
     setIsModalOpen(false)
     setMessage(editingOperationId ? 'Operación actualizada.' : 'Operación guardada.')
@@ -2051,12 +2095,50 @@ function App() {
   // Strategy page tab
   const [strategyTab, setStrategyTab] = useState<'operaciones'|'ia'>('operaciones')
   const [calendarFocus, setCalendarFocus] = useState<string | null>(null)
-  const strategyOps = useMemo(() => (selectedStrategyId ? data.operations.filter(o => o.strategyId === selectedStrategyId).sort((a,b)=>new Date(b.date).getTime()-new Date(a.date).getTime()) : []), [data.operations, selectedStrategyId])
+  const strategyOps = useMemo(() => (
+    selectedStrategyId
+      ? data.operations
+        .filter((operation) => operation.strategyId === selectedStrategyId)
+        .sort((a, b) => getDateKey(b.date).localeCompare(getDateKey(a.date)))
+      : []
+  ), [data.operations, selectedStrategyId])
+  const strategyOpsByDay = useMemo(() => {
+    const grouped = new Map<string, Operation[]>()
+    strategyOps.forEach((operation) => {
+      const dateKey = getDateKey(operation.date)
+      if (!dateKey) return
+      const current = grouped.get(dateKey) ?? []
+      grouped.set(dateKey, [...current, operation])
+    })
+    return grouped
+  }, [strategyOps])
   const filteredStrategyOps = useMemo(() => (
     calendarFocus
-      ? strategyOps.filter((operation) => getDateKey(operation.date) === calendarFocus)
+      ? strategyOpsByDay.get(calendarFocus) ?? []
       : strategyOps
-  ), [calendarFocus, strategyOps])
+  ), [calendarFocus, strategyOps, strategyOpsByDay])
+
+  const setCalendarMonthFromDateKey = (dateKey: string, focusDay = false) => {
+    const normalizedDate = getDateKey(dateKey)
+    if (!normalizedDate) return
+    const [year, month] = normalizedDate.split('-').map(Number)
+    setCalendarMonthDate(new Date(year, month - 1, 1))
+    if (focusDay) setCalendarFocus(normalizedDate)
+  }
+
+  const openStrategyDetails = (strategyId: string) => {
+    const latestDate = dataRef.current.operations
+      .filter((operation) => operation.strategyId === strategyId)
+      .map((operation) => getDateKey(operation.date))
+      .filter(Boolean)
+      .sort((a, b) => b.localeCompare(a))[0]
+
+    setSelectedStrategyId(strategyId)
+    setStrategyTab('operaciones')
+    setCalendarFocus(null)
+    setCalendarMonthFromDateKey(latestDate || toLocalDateTimeInput())
+    setOpenStrategyMenuId(null)
+  }
   const strategyStats = useMemo(() => (selectedStrategyId ? summaryForStrategy({ ...data, operations: strategyOps }, selectedStrategyId) : null), [data, strategyOps, selectedStrategyId])
   const strategyAiAnalysis = useMemo(() => buildStrategyAiAnalysis(strategyOps), [strategyOps])
 
@@ -2284,12 +2366,17 @@ function App() {
   const visibleCalendarDays = new Date(visibleCalendarYear, visibleCalendarMonth + 1, 0).getDate()
   const visibleCalendarMonthLabel = visibleCalendarDate.toLocaleString('es-ES', { month: 'long', year: 'numeric' })
   const calendarWeekdays = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
-  const todayDateKey = getDateKey(new Date().toISOString())
+  const todayDateKey = getDateKey(toLocalDateTimeInput())
   const visibleCalendarLeadingBlanks = (new Date(visibleCalendarYear, visibleCalendarMonth, 1).getDay() + 6) % 7
+  const visibleMonthPrefix = `${visibleCalendarYear}-${String(visibleCalendarMonth + 1).padStart(2, '0')}`
+  const visibleMonthStrategyOps = strategyOps.filter((operation) => getDateKey(operation.date).startsWith(visibleMonthPrefix))
+  const visibleMonthStrategyProfit = visibleMonthStrategyOps.reduce((sum, operation) => sum + computeProfit(operation), 0)
   const changeCalendarMonth = (offset: number) => {
+    setCalendarFocus(null)
     setCalendarMonthDate((current) => new Date(current.getFullYear(), current.getMonth() + offset, 1))
   }
   const resetCalendarMonth = () => {
+    setCalendarFocus(null)
     const today = new Date()
     setCalendarMonthDate(new Date(today.getFullYear(), today.getMonth(), 1))
   }
@@ -2516,7 +2603,10 @@ function App() {
               {strategyTab === 'operaciones' ? (
                 <section className="strategy-calendar-card strategy-calendar-panel apple-calendar-surface">
                   <div className="strategy-calendar-header">
-                    <strong>{visibleCalendarMonthLabel}</strong>
+                    <div className="strategy-calendar-heading">
+                      <strong>{visibleCalendarMonthLabel}</strong>
+                      <span>{visibleMonthStrategyOps.length} {visibleMonthStrategyOps.length === 1 ? 'operación' : 'operaciones'} · {formatCurrency(visibleMonthStrategyProfit)}</span>
+                    </div>
                     <div className="calendar-nav-actions">
                       <button type="button" className="calendar-nav-button" onClick={() => changeCalendarMonth(-1)} aria-label="Mes anterior">‹</button>
                       <button type="button" className="calendar-nav-button calendar-today-button" onClick={resetCalendarMonth}>Hoy</button>
@@ -2526,7 +2616,15 @@ function App() {
                   <div className="panel-header strategy-tools-row strategy-calendar-tools-row">
                     <div className="strategy-date-search">
                       <div className="strategy-date-search-label">Buscar por fecha</div>
-                      <input type="date" value={calendarFocus ?? ''} onChange={(e) => setCalendarFocus(e.target.value || null)} />
+                      <input
+                        type="date"
+                        value={calendarFocus ?? ''}
+                        onChange={(event) => {
+                          const nextDate = event.target.value
+                          setCalendarFocus(nextDate || null)
+                          if (nextDate) setCalendarMonthFromDateKey(nextDate)
+                        }}
+                      />
                     </div>
                   </div>
                   <div className="strategy-operations-layout">
@@ -2540,7 +2638,7 @@ function App() {
                       {Array.from({ length: visibleCalendarDays }).map((_, i) => {
                         const day = i + 1
                         const dayStr = `${visibleCalendarYear}-${String(visibleCalendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-                        const dayOps = strategyOps.filter((op) => getDateKey(op.date) === dayStr)
+                        const dayOps = strategyOpsByDay.get(dayStr) ?? []
                         const dayProfit = dayOps.reduce((sum, op) => sum + computeProfit(op), 0)
                         const cls = dayOps.length ? (dayProfit > 0 ? 'positive' : dayProfit < 0 ? 'negative' : '') : ''
                         return (
@@ -2548,11 +2646,17 @@ function App() {
                             key={day}
                             type="button"
                             className={`strategy-calendar-day ${cls} ${calendarFocus === dayStr ? 'selected' : ''} ${todayDateKey === dayStr ? 'today' : ''}`}
-                            onClick={() => setCalendarFocus(dayStr)}
-                            aria-label={`Ver operaciones del ${formatDate(dayStr)}`}
+                            onClick={() => setCalendarFocus((current) => current === dayStr ? null : dayStr)}
+                            aria-pressed={calendarFocus === dayStr}
+                            aria-label={`${dayOps.length ? `${dayOps.length} operaciones` : 'Sin operaciones'} el ${formatDate(dayStr)}`}
                           >
                             <div className="strategy-calendar-day-number">{day}</div>
-                            {dayOps.length > 0 && (<div className={`strategy-calendar-day-summary ${cls}`}>{formatCurrency(dayProfit)} · {dayOps.length} ops</div>)}
+                            {dayOps.length > 0 ? (
+                              <div className={`strategy-calendar-day-summary ${cls || 'neutral'}`}>
+                                <span className="strategy-calendar-day-profit">{formatCurrency(dayProfit)}</span>
+                                <span className="strategy-calendar-day-count"><b>{dayOps.length}</b><span> {dayOps.length === 1 ? 'op' : 'ops'}</span></span>
+                              </div>
+                            ) : null}
                           </button>
                         )
                       })}
@@ -2776,7 +2880,7 @@ function App() {
                     key={strategy.id}
                     className="strategy-card dashboard-strategy-card"
                     style={{ '--strategy-color': strategy.color ?? '#7de3a0' } as CSSProperties}
-                    onClick={() => { setSelectedStrategyId(strategy.id); setOpenStrategyMenuId(null) }}
+                    onClick={() => openStrategyDetails(strategy.id)}
                   >
                     <div className="strategy-card-header">
                       <div className="dashboard-strategy-title-block">
@@ -4113,18 +4217,48 @@ function App() {
                 </label>
               </div>
 
-              <div style={{ marginTop: 6 }}>
-                <div style={{ marginBottom: 8, color: '#9ca5bf' }}>Color identificativo</div>
-                <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                  <input type="color" value={newStrategyColor} onChange={(e) => setNewStrategyColor(e.target.value)} />
-                  <div style={{ width: 30, height: 30, borderRadius: 999, background: newStrategyColor, border: `1px solid ${hexToRgba(newStrategyColor, 0.35)}`, boxShadow: `0 0 0 4px ${hexToRgba(newStrategyColor, 0.14)}` }} />
-                  <div style={{ display: 'flex', gap: 8 }}>
-                    {['#7de3a0', '#7fb3ff', '#bda8ff', '#ffd37a', '#ff8aa1'].map((c) => (
-                    <button type="button" key={c} onClick={() => setNewStrategyColor(c)} style={{ width: 28, height: 28, borderRadius: 999, border: newStrategyColor === c ? '2px solid #fff' : '1px solid rgba(255,255,255,0.06)', background: c }} />
-                  ))}
+              <section className="strategy-color-picker" aria-labelledby="strategy-color-title">
+                <div className="strategy-color-heading">
+                  <div>
+                    <strong id="strategy-color-title">Color identificativo</strong>
+                    <small>Se aplicará a la tarjeta y a los detalles de esta estrategia.</small>
                   </div>
+                  <output className="strategy-color-value">
+                    <span style={{ '--strategy-selected-color': newStrategyColor } as CSSProperties} aria-hidden="true" />
+                    {newStrategyColor.toUpperCase()}
+                  </output>
                 </div>
-              </div>
+                <div className="strategy-color-controls">
+                  <div className="strategy-color-swatches" role="group" aria-label="Colores recomendados">
+                    {STRATEGY_COLOR_PRESETS.map((preset) => {
+                      const isSelected = newStrategyColor.toUpperCase() === preset.value
+                      return (
+                        <button
+                          type="button"
+                          key={preset.value}
+                          className={isSelected ? 'strategy-color-swatch selected' : 'strategy-color-swatch'}
+                          style={{ '--strategy-swatch-color': preset.value } as CSSProperties}
+                          onClick={() => setNewStrategyColor(preset.value)}
+                          aria-label={`Usar color ${preset.label}`}
+                          aria-pressed={isSelected}
+                          title={preset.label}
+                        >
+                          <span aria-hidden="true">{isSelected ? '✓' : ''}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                  <label className="strategy-custom-color">
+                    <input
+                      type="color"
+                      value={newStrategyColor}
+                      onChange={(event) => setNewStrategyColor(event.target.value.toUpperCase())}
+                      aria-label="Elegir un color personalizado"
+                    />
+                    <span>Personalizado</span>
+                  </label>
+                </div>
+              </section>
 
               <div className="modal-footer">
                 <button type="button" className="button-secondary" onClick={closeStrategyModal}>Cancelar</button>
