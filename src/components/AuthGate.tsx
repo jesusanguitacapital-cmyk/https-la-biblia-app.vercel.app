@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { FormEvent, ReactNode } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { AuthContext } from '../contexts/AuthContext'
@@ -14,6 +14,66 @@ interface AuthGateProps {
 const PASSWORD_RULE = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/
 const getAuthRedirectUrl = () => `${window.location.origin}${window.location.pathname}`
 const normalizeEmail = (value: string) => value.trim().toLowerCase()
+const LOCAL_DEVICE_SESSION_KEY = 'la-biblia-local-device-session-v1'
+const LOCAL_DEVICE_EMAIL = 'local@este-dispositivo.app'
+
+const resolveLocalEmail = (value: string) => {
+  const trimmed = value.trim()
+  return trimmed.includes('@') ? normalizeEmail(trimmed) : LOCAL_DEVICE_EMAIL
+}
+
+const buildLocalUser = (draftEmail = ''): AuthUser => {
+  const resolvedEmail = resolveLocalEmail(draftEmail)
+  const createdAt = new Date().toISOString()
+  const displayName = resolvedEmail === LOCAL_DEVICE_EMAIL ? 'Acceso local' : (resolvedEmail.split('@')[0] || 'Acceso local')
+
+  return {
+    id: 'local-device-user',
+    email: resolvedEmail,
+    created_at: createdAt,
+    email_confirmed_at: createdAt,
+    user_metadata: {
+      full_name: displayName,
+      business_name: displayName,
+      auth_mode: 'local',
+    },
+  }
+}
+
+const readLocalSession = (): AuthUser | null => {
+  try {
+    const raw = window.localStorage.getItem(LOCAL_DEVICE_SESSION_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as Partial<AuthUser>
+    const resolvedEmail = typeof parsed.email === 'string' ? resolveLocalEmail(parsed.email) : LOCAL_DEVICE_EMAIL
+    const createdAt = typeof parsed.created_at === 'string' ? parsed.created_at : new Date().toISOString()
+    const metadata = parsed.user_metadata && typeof parsed.user_metadata === 'object' ? parsed.user_metadata : {}
+    const displayName = typeof metadata.full_name === 'string'
+      ? metadata.full_name
+      : resolvedEmail === LOCAL_DEVICE_EMAIL
+        ? 'Acceso local'
+        : (resolvedEmail.split('@')[0] || 'Acceso local')
+
+    return {
+      id: typeof parsed.id === 'string' ? parsed.id : 'local-device-user',
+      email: resolvedEmail,
+      created_at: createdAt,
+      email_confirmed_at: typeof parsed.email_confirmed_at === 'string' ? parsed.email_confirmed_at : createdAt,
+      user_metadata: {
+        ...metadata,
+        full_name: displayName,
+        business_name: typeof metadata.business_name === 'string' ? metadata.business_name : displayName,
+        auth_mode: 'local',
+      },
+    }
+  } catch {
+    return null
+  }
+}
+
+const writeLocalSession = (user: AuthUser) => {
+  window.localStorage.setItem(LOCAL_DEVICE_SESSION_KEY, JSON.stringify(user))
+}
 
 const mapSupabaseUser = (user: Session['user'] | null): AuthUser | null => user
   ? {
@@ -27,6 +87,7 @@ const mapSupabaseUser = (user: Session['user'] | null): AuthUser | null => user
 
 export function AuthGate({ children }: AuthGateProps) {
   const [session, setSession] = useState<Session | null>(null)
+  const [localUser, setLocalUser] = useState<AuthUser | null>(null)
   const [isChecking, setIsChecking] = useState(true)
   const [mode, setMode] = useState<AuthMode>('login')
   const [message, setMessage] = useState('')
@@ -37,6 +98,11 @@ export function AuthGate({ children }: AuthGateProps) {
   const [repeatPassword, setRepeatPassword] = useState('')
 
   useEffect(() => {
+    const storedLocalUser = readLocalSession()
+    if (storedLocalUser) {
+      setLocalUser(storedLocalUser)
+    }
+
     if (!supabase) {
       setIsChecking(false)
       return
@@ -62,28 +128,48 @@ export function AuthGate({ children }: AuthGateProps) {
     }
   }, [])
 
-  const user = mapSupabaseUser(session?.user ?? null)
+  const onlineUser = mapSupabaseUser(session?.user ?? null)
+  const user = localUser ?? onlineUser
+  const storageMode = localUser ? 'local' as const : 'online' as const
   const signOut = async () => {
-    if (!supabase) return
-    await supabase.auth.signOut()
+    window.localStorage.removeItem(LOCAL_DEVICE_SESSION_KEY)
+    setLocalUser(null)
+    if (supabase && session) {
+      await supabase.auth.signOut()
+    }
     setSession(null)
     setMode('login')
+    setMessage('')
     setPassword('')
     setRepeatPassword('')
   }
 
-  const authValue = useMemo(() => ({
+  const handleLocalDeviceAccess = async () => {
+    const nextLocalUser = buildLocalUser(email)
+    writeLocalSession(nextLocalUser)
+    setLocalUser(nextLocalUser)
+    if (supabase && session) {
+      await supabase.auth.signOut()
+      setSession(null)
+    }
+    setMode('login')
+    setMessage('')
+    setPassword('')
+    setRepeatPassword('')
+  }
+
+  const authValue = {
     user: user as AuthUser,
-    storageMode: 'online' as const,
+    storageMode,
     refreshProfile: async () => {
-      if (!supabase) return
+      if (localUser || !supabase) return
       const { data } = await supabase.auth.getUser()
       if (data.user && session) {
         setSession({ ...session, user: data.user })
       }
     },
     signOut,
-  }), [session, user])
+  }
 
   const resetFormFeedback = () => setMessage('')
 
@@ -203,18 +289,22 @@ export function AuthGate({ children }: AuthGateProps) {
           <p>Para que el mismo correo funcione en ordenador, móvil y cualquier navegador, la app necesita Supabase configurado en Vercel.</p>
           <code>VITE_SUPABASE_URL</code>
           <code>VITE_SUPABASE_ANON_KEY</code>
-          <p>No voy a permitir más registros locales porque luego fallan en otro dispositivo. En cuanto esas variables estén puestas, aparecerá el registro real.</p>
+          <p>Mientras arreglamos el acceso online, puedes entrar en modo local y seguir trabajando desde este dispositivo.</p>
+          <button className="button-primary auth-submit" type="button" onClick={() => void handleLocalDeviceAccess()}>
+            Entrar en este dispositivo
+          </button>
         </div>
       </div>
     )
   }
 
   if (user) {
-    const displayName = typeof user.user_metadata?.full_name === 'string' ? user.user_metadata.full_name : user.email
+    const displayName = typeof user.user_metadata?.full_name === 'string' ? user.user_metadata.full_name : (user.email ?? 'Usuario')
+    const sessionLabel = localUser ? 'Modo local en este dispositivo' : (user.email ?? 'Cuenta online')
     return (
       <AuthContext.Provider value={authValue}>
         <div className="account-session-bar">
-          <span>{displayName} · {user.email}</span>
+          <span>{displayName} · {sessionLabel}</span>
         </div>
         {children}
       </AuthContext.Provider>
@@ -257,6 +347,15 @@ export function AuthGate({ children }: AuthGateProps) {
         <button className="button-primary auth-submit" disabled={isSubmitting} type="submit">
           {isSubmitting ? 'Procesando...' : mode === 'login' ? 'Iniciar sesión' : mode === 'register' ? 'Crear cuenta' : mode === 'forgot' ? 'Enviar correo' : 'Guardar contraseña'}
         </button>
+
+        {mode === 'login' ? (
+          <>
+            <button className="button-secondary auth-submit" type="button" onClick={() => void handleLocalDeviceAccess()}>
+              Entrar en este dispositivo
+            </button>
+            <p>Si el correo o la recuperación fallan, puedes seguir usando la app en modo local en este navegador.</p>
+          </>
+        ) : null}
 
         <div className="auth-links">
           {mode !== 'login' ? <button type="button" onClick={() => { setMode('login'); resetFormFeedback() }}>Volver al inicio</button> : null}

@@ -914,7 +914,7 @@ const buildDualChartSvgData = (chartData: Array<{ label: string; withdrawn: numb
 
 
 function App() {
-  const { user, signOut } = useAuth()
+  const { user, storageMode, signOut } = useAuth()
   const [data, setData] = useState<AppData>(DEFAULT_DATA)
   const dataRef = useRef<AppData>(DEFAULT_DATA)
   const [operationForm, setOperationForm] = useState<any>(initialOperationState)
@@ -1127,6 +1127,16 @@ function App() {
           const loaded = await window.tradingApp.loadData()
           nextData = loaded.data ?? DEFAULT_DATA
           nextData.settings.dataFolder ||= loaded.folder
+        } else if (storageMode === 'local') {
+          const local = window.localStorage.getItem(STORAGE_KEY)
+          if (local) {
+            nextData = JSON.parse(local) as AppData
+            setMessage('Datos cargados desde este dispositivo.')
+          } else {
+            nextData = DEFAULT_DATA
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextData))
+            setMessage('Modo local activado. Tus datos se guardarán en este dispositivo.')
+          }
         } else {
           const remote = await loadUserAppData(user.id)
           const local = window.localStorage.getItem(STORAGE_KEY)
@@ -1177,6 +1187,8 @@ function App() {
         if (needsPersonalizationMigration) {
           if (isElectron) {
             await window.tradingApp.saveData({ folder: nextData.settings.dataFolder, data: nextData })
+          } else if (storageMode === 'local') {
+            window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextData))
           } else {
             await saveUserAppData(user.id, nextData)
           }
@@ -1196,7 +1208,7 @@ function App() {
     }
 
     initialize()
-  }, [user.id])
+  }, [storageMode, user.id])
 
 
   // filter strategies and operations by environment
@@ -1494,6 +1506,13 @@ function App() {
         setMessage('Datos guardados localmente.')
       } catch {
         setMessage('Error guardando los datos en la carpeta local.')
+      }
+    } else if (storageMode === 'local') {
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextData))
+        setMessage('Datos guardados en este dispositivo.')
+      } catch {
+        setMessage('Error guardando los datos en este dispositivo.')
       }
     } else {
       try {
@@ -3809,15 +3828,21 @@ function App() {
                   }}>Cambiar carpeta de datos</button>
                 ) : null}
               </div>
-              <div className="settings-folder-note">Guardado actual: {isElectron ? (data.settings.dataFolder ?? 'Carpeta local pendiente de elegir') : `Cuenta online · ${user.email}`}</div>
+              <div className="settings-folder-note">Guardado actual: {isElectron ? (data.settings.dataFolder ?? 'Carpeta local pendiente de elegir') : storageMode === 'local' ? 'Este dispositivo' : `Cuenta online · ${user.email ?? 'sin correo'}`}</div>
             </div>
 
             <div className="settings-section">
               <span className="settings-section-label">Cuenta y seguridad</span>
-              <div className="settings-folder-note">Sesión activa con {user.email}. Tus datos están conectados a una cuenta online.</div>
+              <div className="settings-folder-note">{storageMode === 'local' ? 'Sesión local activa. Tus datos viven en este dispositivo hasta que recuperemos el acceso online.' : `Sesión activa con ${user.email}. Tus datos están conectados a una cuenta online.`}</div>
               <div className="settings-action-list">
-                <button type="button" className="button-secondary settings-action-button" onClick={() => setMessage('Para cambiar contraseña usa “He olvidado mi contraseña” en la pantalla de acceso.')}>Cambiar contraseña</button>
-                <button type="button" className="button-secondary settings-action-button" onClick={() => setMessage('El cambio de correo se hará con confirmación segura.')}>Cambiar correo</button>
+                {storageMode === 'local' ? (
+                  <button type="button" className="button-secondary settings-action-button" onClick={() => setMessage('Estás usando el modo local de emergencia. Tus datos solo se guardan en este dispositivo.')}>Información del acceso local</button>
+                ) : (
+                  <>
+                    <button type="button" className="button-secondary settings-action-button" onClick={() => setMessage('Para cambiar contraseña usa “He olvidado mi contraseña” en la pantalla de acceso.')}>Cambiar contraseña</button>
+                    <button type="button" className="button-secondary settings-action-button" onClick={() => setMessage('El cambio de correo se hará con confirmación segura.')}>Cambiar correo</button>
+                  </>
+                )}
                 <button type="button" className="button-secondary settings-action-button danger-action-button" onClick={() => void signOut()}>Cerrar sesión</button>
               </div>
             </div>
