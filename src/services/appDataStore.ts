@@ -4,6 +4,8 @@ import { supabase } from './supabase'
 const TABLE_NAME = 'app_data_snapshots'
 const METADATA_KEY = 'la_biblia_app_data'
 const METADATA_UPDATED_AT_KEY = 'la_biblia_app_data_updated_at'
+const LOCAL_DEVICE_USER_ID = 'local-device-user'
+const LOCAL_APP_DATA_KEY = 'trading-coach-data'
 
 const shouldUseMetadataFallback = (error: unknown) => {
   if (!error || typeof error !== 'object') return false
@@ -19,6 +21,21 @@ const shouldUseMetadataFallback = (error: unknown) => {
     || message.includes('schema cache')
     || message.includes('permission denied')
     || message.includes('row-level security')
+}
+
+const isLocalDeviceUser = (userId: string) => userId === LOCAL_DEVICE_USER_ID
+
+const readLocalAppData = (): AppData | null => {
+  try {
+    const raw = window.localStorage.getItem(LOCAL_APP_DATA_KEY)
+    return raw ? JSON.parse(raw) as AppData : null
+  } catch {
+    return null
+  }
+}
+
+const writeLocalAppData = (appData: AppData) => {
+  window.localStorage.setItem(LOCAL_APP_DATA_KEY, JSON.stringify(appData))
 }
 
 const loadFromUserMetadata = async (userId: string): Promise<AppData | null> => {
@@ -48,6 +65,10 @@ const saveToUserMetadata = async (appData: AppData) => {
 }
 
 export const loadUserAppData = async (userId: string): Promise<AppData | null> => {
+  if (isLocalDeviceUser(userId)) {
+    return readLocalAppData()
+  }
+
   if (!supabase) return null
 
   const { data, error } = await supabase
@@ -67,6 +88,11 @@ export const loadUserAppData = async (userId: string): Promise<AppData | null> =
 }
 
 export const saveUserAppData = async (userId: string, appData: AppData) => {
+  if (isLocalDeviceUser(userId)) {
+    writeLocalAppData(appData)
+    return
+  }
+
   if (!supabase) {
     throw new Error('Supabase no está configurado.')
   }
